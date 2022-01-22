@@ -4,8 +4,6 @@ use validator::Validate;
 
 use crate::{models::attachment::File, types::january::Embed};
 
-use super::channel::Channel;
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum SystemMessage {
@@ -55,21 +53,6 @@ impl Into<String> for SystemMessage {
 pub enum Content {
     Text(String),
     SystemMessage(SystemMessage),
-}
-
-impl Content {
-    pub async fn send_as_system(self, target: &Channel) -> Result<()> {
-        Message::create(
-            "00000000000000000000000000".to_string(),
-            target.id().to_string(),
-            self,
-            None,
-            None,
-            None,
-        )
-        .publish(&target, false)
-        .await
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Validate)]
