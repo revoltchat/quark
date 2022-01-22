@@ -7,6 +7,7 @@ extern crate impl_ops;
 
 pub mod r#impl;
 pub mod models;
+pub mod types;
 
 mod database;
 mod traits;
