@@ -2,6 +2,8 @@
 extern crate async_trait;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate impl_ops;
 
 pub mod r#impl;
 pub mod models;
@@ -20,4 +22,5 @@ async fn main() {
     let db = DatabaseInfo::Dummy.connect().await.unwrap();
     let model = db.fetch_simple().await.expect("valid `Model`");
     db.insert_simple(&model).await.unwrap();
+    model.do_something();
 }
