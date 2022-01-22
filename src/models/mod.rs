@@ -32,4 +32,16 @@ pub use channels::*;
 pub use servers::*;
 pub use users::*;
 
+pub use attachment::File;
+pub use bot::Bot;
+pub use channel::Channel;
+pub use channel_invite::Invite;
+pub use channel_unread::ChannelUnread;
+pub use message::Message;
+pub use migrations::MigrationInfo;
+pub use server::Server;
+pub use server_ban::ServerBan;
+pub use server_member::Member;
+pub use simple::SimpleModel;
 pub use user::User;
+pub use user_settings::UserSettings;
