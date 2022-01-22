@@ -1,19 +1,4 @@
-#[macro_use]
-extern crate async_trait;
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate impl_ops;
-
-pub mod r#impl;
-pub mod models;
-
-mod util;
-mod traits;
-mod database;
-pub use traits::*;
-pub use database::*;
-pub use util::result::{Error, Result};
+mod lib;
 
 #[async_std::main]
 async fn main() {

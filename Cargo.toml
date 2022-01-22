@@ -1,5 +1,5 @@
 [package]
-name = "quark"
+name = "revolt-quark"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,6 +11,7 @@ default = [ "test" ]
 
 [dependencies]
 # Serialisation
+validator = { version = "0.14", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 
 # Databases
@@ -24,5 +25,6 @@ async-std = { version = "1.8.0", features = ["attributes"], optional = true }
 log = "0.4"
 
 # Util
+ops = "0.6.0"
 impl_ops = "0.1.1"
 num_enum = "0.5.6"
