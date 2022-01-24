@@ -88,3 +88,9 @@ pub enum Channel {
         nsfw: bool,
     },
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldsChannel {
+    Description,
+    Icon,
+}

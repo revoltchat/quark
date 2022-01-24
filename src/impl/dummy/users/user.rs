@@ -1,4 +1,4 @@
-use crate::models::user::User;
+use crate::models::user::{FieldsUser, PartialUser, User};
 use crate::{AbstractUser, Result};
 
 use super::super::DummyDB;
@@ -22,6 +22,26 @@ impl AbstractUser for DummyDB {
             relationship: None,
             online: None,
         })
+    }
+
+    async fn insert_user(&self, user: &User) -> Result<()> {
+        info!("Insert {:?}", user);
+        Ok(())
+    }
+
+    async fn update_user(
+        &self,
+        id: &str,
+        user: &PartialUser,
+        remove: Vec<FieldsUser>,
+    ) -> Result<()> {
+        info!("Update {id} with {user:?} and remove {remove:?}");
+        Ok(())
+    }
+
+    async fn delete_user(&self, id: &str) -> Result<()> {
+        info!("Delete {id}");
+        Ok(())
     }
 
     async fn fetch_users(&self, _id: &Vec<String>) -> Result<Vec<User>> {

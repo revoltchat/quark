@@ -11,8 +11,9 @@ default = [ "test" ]
 
 [dependencies]
 # Serialisation
-validator = { version = "0.14", features = ["derive"] }
+optional_struct = "0.2.0"
 serde = { version = "1", features = ["derive"] }
+validator = { version = "0.14", features = ["derive"] }
 
 # Databases
 mongodb = { version = "2.1.0", default-features = false }

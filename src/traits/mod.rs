@@ -29,4 +29,7 @@ mod users {
 pub use admin::simple::AbstractSimpleModel;
 pub use users::user::AbstractUser;
 
+// pub trait AbstractEventEmitter {}
+// + AbstractEventEmitter
+
 pub trait AbstractDatabase: Sync + Send + AbstractSimpleModel + AbstractUser {}

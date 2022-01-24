@@ -75,8 +75,9 @@ pub struct BotInformation {
     owner: String,
 }
 
-// When changing this struct, update notifications/payload.rs#113
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[optional_name = "PartialUser"]
+#[optional_derive(Serialize, Deserialize, Debug, Default)]
 pub struct User {
     #[serde(rename = "_id")]
     pub id: String,
@@ -103,4 +104,15 @@ pub struct User {
     pub relationship: Option<RelationshipStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub online: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldsUser {
+    Avatar,
+    Badges,
+    StatusText,
+    StatusPresence,
+    ProfileContent,
+    ProfileBackground,
+    Flags,
 }

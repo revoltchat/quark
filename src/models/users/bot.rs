@@ -4,7 +4,9 @@ pub fn if_false(t: &bool) -> bool {
     !t
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[optional_name = "PartialBot"]
+#[optional_derive(Serialize, Deserialize, Debug, Default)]
 pub struct Bot {
     #[serde(rename = "_id")]
     pub id: String,
