@@ -4,8 +4,8 @@ use validator::Validate;
 
 use crate::models::attachment::File;
 
+/// User's relationship with another user (or themselves)
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-/// User's relationship with another user (or themselves).
 pub enum RelationshipStatus {
     None,
     User,
@@ -16,16 +16,16 @@ pub enum RelationshipStatus {
     BlockedOther,
 }
 
+/// Relationship entry indicating current status with other user
 #[derive(Serialize, Deserialize, Debug, Clone)]
-/// Relationship entry indicating current status with other user.
 pub struct Relationship {
     #[serde(rename = "_id")]
     pub id: String,
     pub status: RelationshipStatus,
 }
 
+/// Presence status
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-/// Presence status.
 pub enum Presence {
     Online,
     Idle,
@@ -33,28 +33,29 @@ pub enum Presence {
     Invisible,
 }
 
+/// User's active status
 #[derive(Serialize, Deserialize, Debug, Clone, Validate)]
-/// User's active status.
 pub struct UserStatus {
+    /// Custom status text
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Custom status text.
     pub text: Option<String>,
+    /// Current presence option
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Current presence option.
     pub presence: Option<Presence>,
 }
 
+/// User's profile
 #[derive(Serialize, Deserialize, Debug, Clone)]
-/// User's profile.
 pub struct UserProfile {
+    /// Text content on user's profile
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Text content on user's profile.
     pub content: Option<String>,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    /// Background visible on user's profile.
+    /// Background visible on user's profile
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub background: Option<File>,
 }
 
+/// User badge bitfield
 #[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
 #[repr(i32)]
 pub enum Badges {
@@ -70,42 +71,66 @@ pub enum Badges {
     ReservedRelevantJokeBadge1 = 512,
 }
 
+/// User flag enum
+#[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
+#[repr(i32)]
+pub enum Flags {
+    Suspended = 1,
+    Deleted = 2,
+    Banned = 4,
+}
+
+/// Bot information for if the user is a bot
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BotInformation {
+    /// Id of the owner of this bot
     owner: String,
 }
 
+/// Representiation of a User on Revolt.
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
-#[optional_name = "PartialUser"]
 #[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_name = "PartialUser"]
 pub struct User {
+    /// Unique Id
     #[serde(rename = "_id")]
     pub id: String,
+    /// Username
     pub username: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    /// Avatar attachment
     pub avatar: Option<File>,
+    /// Relationships with other users
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relations: Option<Vec<Relationship>>,
 
+    /// Bitfield of user badges
     #[serde(skip_serializing_if = "Option::is_none")]
     pub badges: Option<i32>,
+    /// User's current status
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<UserStatus>,
+    /// User's profile page
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile: Option<UserProfile>,
 
+    /// Enum of user flags
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<i32>,
+    /// Bot information
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bot: Option<BotInformation>,
 
-    // ? This should never be pushed to the collection.
+    // ? Entries below should never be pushed to the database.
+    /// Current session user's relationship with this user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relationship: Option<RelationshipStatus>,
+    /// Whether this user is currently online.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub online: Option<bool>,
 }
 
+/// Optional fields on user object.
 #[derive(Serialize, Deserialize, Debug)]
 pub enum FieldsUser {
     Avatar,
