@@ -26,8 +26,23 @@ mod users {
     pub mod user_settings;
 }
 
+pub use admin::migrations::AbstractMigrations;
 pub use admin::simple::AbstractSimpleModel;
+
+pub use autumn::attachment::AbstractAttachment;
+
+pub use channels::channel::AbstractChannel;
+pub use channels::channel_invite::AbstractChannelInvite;
+pub use channels::channel_unread::AbstractChannelUnread;
+pub use channels::message::AbstractMessage;
+
+pub use servers::server::AbstractServer;
+pub use servers::server_ban::AbstractServerBan;
+pub use servers::server_member::AbstractServerMember;
+
+pub use users::bot::AbstractBot;
 pub use users::user::AbstractUser;
+pub use users::user_settings::AbstractUserSettings;
 
 // pub trait AbstractEventEmitter {}
 // + AbstractEventEmitter
