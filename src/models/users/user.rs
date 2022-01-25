@@ -121,16 +121,16 @@ pub struct User {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bot: Option<BotInformation>,
 
-    // ? Entries below should never be pushed to the database.
-    /// Current session user's relationship with this user.
+    // ? Entries below should never be pushed to the database
+    /// Current session user's relationship with this user
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relationship: Option<RelationshipStatus>,
-    /// Whether this user is currently online.
+    /// Whether this user is currently online
     #[serde(skip_serializing_if = "Option::is_none")]
     pub online: Option<bool>,
 }
 
-/// Optional fields on user object.
+/// Optional fields on user object
 #[derive(Serialize, Deserialize, Debug)]
 pub enum FieldsUser {
     Avatar,
