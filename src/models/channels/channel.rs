@@ -134,4 +134,5 @@ pub enum Channel {
 pub enum FieldsChannel {
     Description,
     Icon,
+    DefaultPermissions,
 }

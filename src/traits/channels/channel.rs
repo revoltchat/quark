@@ -1,4 +1,4 @@
-use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
+use crate::models::channel::{Channel, FieldsChannel /*PartialChannel*/};
 use crate::Result;
 
 #[async_trait]
@@ -8,7 +8,7 @@ pub trait AbstractChannel: Sync + Send {
     async fn update_channel(
         &self,
         id: &str,
-        channel: &PartialChannel,
+        // channel: &PartialChannel,
         remove: Vec<FieldsChannel>,
     ) -> Result<()>;
     async fn delete_channel(&self, id: &str) -> Result<()>;

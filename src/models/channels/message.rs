@@ -54,7 +54,9 @@ pub struct Masquerade {
 }
 
 /// Representation of a Message on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_name = "PartialMessage"]
 pub struct Message {
     /// Unique Id
     #[serde(rename = "_id")]
@@ -87,4 +89,11 @@ pub struct Message {
     /// Name and / or avatar overrides for this message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub masquerade: Option<Masquerade>,
+}
+
+/// Optional fields on channel object
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldsMessage {
+    Description,
+    Icon,
 }
