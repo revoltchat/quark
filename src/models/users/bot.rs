@@ -31,3 +31,10 @@ pub struct Bot {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interactions_url: Option<String>,
 }
+
+/// Optional fields on bot object
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldsBot {
+    Token,
+    InteractionsURL,
+}

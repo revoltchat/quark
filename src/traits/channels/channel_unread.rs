@@ -1,4 +1,4 @@
-use crate::models::channel_unread::{ChannelUnread};
+use crate::models::channel_unread::ChannelUnread;
 use crate::Result;
 
 #[async_trait]

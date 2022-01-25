@@ -35,7 +35,7 @@ pub enum Error {
     UnknownServer,
     InvalidRole,
     Banned,
-    TooManyServers{
+    TooManyServers {
         max: usize,
     },
 
@@ -55,7 +55,6 @@ pub enum Error {
     DuplicateNonce,
     VosoUnavailable,
     NotFound,
-
     /*FailedValidation {
         error: ValidationErrors
     }*/

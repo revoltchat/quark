@@ -13,8 +13,8 @@ pub mod r#impl;
 pub mod models;
 pub mod types;
 
-mod permissions;
 mod database;
+mod permissions;
 mod traits;
 mod util;
 pub use database::*;

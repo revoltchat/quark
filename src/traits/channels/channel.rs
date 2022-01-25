@@ -1,4 +1,4 @@
-use crate::models::channel::{FieldsChannel, PartialChannel, Channel};
+use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
 use crate::Result;
 
 #[async_trait]

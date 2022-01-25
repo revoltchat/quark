@@ -1,4 +1,4 @@
-use crate::models::message::{FieldsMessage, PartialMessage, Message};
+use crate::models::message::{FieldsMessage, Message, PartialMessage};
 use crate::Result;
 
 #[async_trait]

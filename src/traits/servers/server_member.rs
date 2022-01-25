@@ -1,4 +1,4 @@
-use crate::models::server_member::{FieldsMember, PartialMember, Member};
+use crate::models::server_member::{FieldsMember, Member, PartialMember};
 use crate::Result;
 
 #[async_trait]

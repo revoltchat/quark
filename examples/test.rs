@@ -9,9 +9,9 @@ async fn main() {
     model.do_something();
 
     let sus = PartialUser {
-        username: Some("trolling!".into()),
+        username: Some("neat".into()),
         ..Default::default()
     };
 
-    db.update_user("sussing!", &sus, vec![]).await.unwrap();
+    db.update_user("user id", &sus, vec![]).await.unwrap();
 }

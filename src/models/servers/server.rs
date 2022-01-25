@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
 use num_enum::TryFromPrimitive;
+use serde::{Deserialize, Serialize};
 
 use crate::models::attachment::File;
 

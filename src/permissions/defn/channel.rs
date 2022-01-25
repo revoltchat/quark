@@ -20,9 +20,7 @@ impl_op_ex_commutative!(+ |a: &u32, b: &ChannelPermission| -> u32 { *a | *b as u
 
 lazy_static! {
     pub static ref DEFAULT_PERMISSION_CHANNEL_SAVED: u32 = u32::MAX;
-
-    pub static ref DEFAULT_PERMISSION_CHANNEL_DIRECT: u32 =
-        ChannelPermission::View
+    pub static ref DEFAULT_PERMISSION_CHANNEL_DIRECT: u32 = ChannelPermission::View
         + ChannelPermission::SendMessage
         + ChannelPermission::ManageChannel
         + ChannelPermission::VoiceCall
@@ -30,9 +28,7 @@ lazy_static! {
         + ChannelPermission::EmbedLinks
         + ChannelPermission::UploadFiles
         + ChannelPermission::Masquerade;
-
-    pub static ref DEFAULT_PERMISSION_CHANNEL_SERVER: u32 =
-        ChannelPermission::View
+    pub static ref DEFAULT_PERMISSION_CHANNEL_SERVER: u32 = ChannelPermission::View
         + ChannelPermission::SendMessage
         + ChannelPermission::VoiceCall
         + ChannelPermission::InviteOthers

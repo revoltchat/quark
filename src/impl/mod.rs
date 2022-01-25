@@ -1,2 +1,2 @@
-pub mod generic;
 pub mod dummy;
+pub mod generic;
