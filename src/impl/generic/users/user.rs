@@ -13,28 +13,36 @@ impl User {
             FieldsUser::Avatar => self.avatar = None,
             FieldsUser::Badges => self.badges = None,
             FieldsUser::StatusText => {
-                self.status.as_mut().map(|x| x.text = None);
+                if let Some(x) = self.status.as_mut() {
+                    x.text = None;
+                }
             }
             FieldsUser::StatusPresence => {
-                self.status.as_mut().map(|x| x.presence = None);
+                if let Some(x) = self.status.as_mut() {
+                    x.presence = None;
+                }
             }
             FieldsUser::ProfileContent => {
-                self.profile.as_mut().map(|x| x.content = None);
+                if let Some(x) = self.profile.as_mut() {
+                    x.content = None;
+                }
             }
             FieldsUser::ProfileBackground => {
-                self.profile.as_mut().map(|x| x.background = None);
+                if let Some(x) = self.profile.as_mut() {
+                    x.background = None;
+                }
             }
             FieldsUser::Flags => self.flags = None,
         }
     }
 
     /// Mutate the user object to include relationship as seen by user.
-    pub fn from(mut self, user: &User) -> User {
+    pub fn from(/*mut */ self, _user: &User) -> User {
         todo!()
     }
 
     /// Apply any relevant badges.
-    pub fn apply_badges(mut self) -> User {
+    pub fn apply_badges(/*mut */ self) -> User {
         todo!()
     }
 
@@ -46,30 +54,30 @@ impl User {
     /// Mutate the user object to appear as seen by user.
     /// Also overrides the relationship status.
     pub async fn from_override(
-        mut self,
-        user: &User,
-        relationship: RelationshipStatus,
+        /*mut */ self,
+        _user: &User,
+        _relationship: RelationshipStatus,
     ) -> Result<User> {
         todo!()
     }
 
     /// Utility function to get all of a user's memberships.
-    pub async fn fetch_memberships(&self, db: &Database) -> Result<Vec<String>> {
+    pub async fn fetch_memberships(&self, _db: &Database) -> Result<Vec<String>> {
         todo!();
     }
 
     /// Utility function to get all the server IDs the user is in.
-    pub async fn fetch_server_ids(&self, db: &Database) -> Result<Vec<String>> {
+    pub async fn fetch_server_ids(&self, _db: &Database) -> Result<Vec<String>> {
         todo!();
     }
 
     /// Utility function to fetch unread objects for user.
-    pub async fn fetch_unreads(&self, db: &Database, id: &str) -> Result<Vec<String>> {
+    pub async fn fetch_unreads(&self, _db: &Database, _id: &str) -> Result<Vec<String>> {
         todo!();
     }
 
     /// Check if this user can acquire another server.
-    pub async fn can_acquire_server(&self, db: &Database, id: &str) -> Result<bool> {
+    pub async fn can_acquire_server(&self, _db: &Database, _id: &str) -> Result<bool> {
         todo!()
     }
 }

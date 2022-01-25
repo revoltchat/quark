@@ -12,6 +12,6 @@ pub trait AbstractUser: Sync + Send {
         remove: Vec<FieldsUser>,
     ) -> Result<()>;
     async fn delete_user(&self, id: &str) -> Result<()>;
-    async fn fetch_users(&self, id: &Vec<String>) -> Result<Vec<User>>;
+    async fn fetch_users(&self, id: &'static [String]) -> Result<Vec<User>>;
     async fn is_username_taken(&self, username: &str) -> Result<bool>;
 }

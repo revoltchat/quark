@@ -44,7 +44,7 @@ impl AbstractUser for DummyDB {
         Ok(())
     }
 
-    async fn fetch_users(&self, _id: &Vec<String>) -> Result<Vec<User>> {
+    async fn fetch_users(&self, _id: &'static [String]) -> Result<Vec<User>> {
         Ok(vec![self.fetch_user("id").await.unwrap()])
     }
 

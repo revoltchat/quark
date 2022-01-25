@@ -14,9 +14,7 @@ pub enum Database {
 
 impl DatabaseInfo {
     pub async fn connect(self) -> Result<Database> {
-        match self {
-            _ => Ok(Database::Dummy(DummyDB)),
-        }
+        Ok(Database::Dummy(DummyDB))
     }
 }
 

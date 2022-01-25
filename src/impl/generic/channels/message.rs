@@ -1,8 +1,8 @@
 use crate::models::message::SystemMessage;
 
-impl Into<String> for SystemMessage {
-    fn into(self) -> String {
-        match self {
+impl From<SystemMessage> for String {
+    fn from(s: SystemMessage) -> String {
+        match s {
             SystemMessage::Text { content } => content,
             SystemMessage::UserAdded { .. } => "User added to the channel.".to_string(),
             SystemMessage::UserRemove { .. } => "User removed from the channel.".to_string(),
