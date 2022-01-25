@@ -1,4 +1,5 @@
 use crate::models::user::{Badges, FieldsUser, RelationshipStatus, User};
+use crate::permissions::defn::user::UserPermissions;
 use crate::{Database, Result};
 
 use impl_ops::impl_op_ex_commutative;
@@ -47,7 +48,7 @@ impl User {
     }
 
     /// Mutate the user object to appear as seen by user.
-    pub fn with(self /*, permissions: UserPermissions<[u32; 1]>*/) -> User {
+    pub fn with(self, _permissions: UserPermissions) -> User {
         todo!()
     }
 

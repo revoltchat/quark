@@ -6,11 +6,14 @@ extern crate log;
 extern crate impl_ops;
 #[macro_use]
 extern crate optional_struct;
+#[macro_use]
+extern crate lazy_static;
 
 pub mod r#impl;
 pub mod models;
 pub mod types;
 
+mod permissions;
 mod database;
 mod traits;
 mod util;
