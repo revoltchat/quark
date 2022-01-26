@@ -47,4 +47,21 @@ pub use users::user_settings::AbstractUserSettings;
 // pub trait AbstractEventEmitter {}
 // + AbstractEventEmitter
 
-pub trait AbstractDatabase: Sync + Send + AbstractSimpleModel + AbstractUser {}
+pub trait AbstractDatabase:
+    Sync
+    + Send
+    + AbstractMigrations
+    + AbstractSimpleModel
+    + AbstractAttachment
+    + AbstractChannel
+    + AbstractChannelInvite
+    + AbstractChannelUnread
+    + AbstractMessage
+    + AbstractServer
+    + AbstractServerBan
+    + AbstractServerMember
+    + AbstractBot
+    + AbstractUser
+    + AbstractUserSettings
+{
+}

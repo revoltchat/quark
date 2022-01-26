@@ -37,5 +37,5 @@ pub struct Member {
 pub enum FieldsMember {
     Nickname,
     Avatar,
-    Roles
+    Roles,
 }

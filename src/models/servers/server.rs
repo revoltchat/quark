@@ -119,5 +119,5 @@ pub enum FieldsServer {
     SystemMessages,
     Icon,
     Banner,
-    Flags
+    Flags,
 }
