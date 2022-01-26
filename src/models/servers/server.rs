@@ -57,7 +57,9 @@ pub enum RemoveMember {
 }
 
 /// Representation of a server on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_name = "PartialServer"]
 pub struct Server {
     /// Unique Id
     #[serde(rename = "_id")]
@@ -107,4 +109,15 @@ pub struct Server {
     /// Whether this server should be publicly discoverable
     #[serde(skip_serializing_if = "if_false", default)]
     pub discoverable: bool,
+}
+
+/// Optional fields on server object
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldsServer {
+    Description,
+    Categories,
+    SystemMessages,
+    Icon,
+    Banner,
+    Flags
 }

@@ -4,10 +4,10 @@ use std::ops;
 #[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
 #[repr(u32)]
 pub enum UserPermission {
-    Access = 0b00000000000000000000000000000001,      // 1
-    ViewProfile = 0b00000000000000000000000000000010, // 2
-    SendMessage = 0b00000000000000000000000000000100, // 4
-    Invite = 0b00000000000000000000000000001000,      // 8
+    Access = 1 << 0,
+    ViewProfile = 1 << 1,
+    SendMessage = 1 << 2,
+    Invite = 1 << 3,
 }
 
 impl_op_ex!(+ |a: &UserPermission, b: &UserPermission| -> u32 { *a as u32 | *b as u32 });

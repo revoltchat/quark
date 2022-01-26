@@ -36,4 +36,4 @@ lazy_static! {
         + ChannelPermission::UploadFiles;
 }
 
-pub struct ChannelPermissions();
+// pub struct ChannelPermissions();
