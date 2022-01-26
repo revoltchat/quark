@@ -10,14 +10,16 @@ impl AbstractUserSettings for DummyDB {
         _id: &str,
         _filter: &'static [&'static str],
     ) -> Result<UserSettings> {
-        todo!()
+        Ok(std::collections::HashMap::new())
     }
 
-    async fn set_user_settings(&self, _id: &str, _settings: &UserSettings) -> Result<()> {
-        todo!()
+    async fn set_user_settings(&self, id: &str, settings: &UserSettings) -> Result<()> {
+        info!("Set {id} to {settings:?}");
+        Ok(())
     }
     
-    async fn delete_user_settings(&self, _id: &str) -> Result<()> {
-        todo!()
+    async fn delete_user_settings(&self, id: &str) -> Result<()> {
+        info!("Delete {id}");
+        Ok(())
     }
 }

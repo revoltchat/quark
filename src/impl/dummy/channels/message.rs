@@ -10,20 +10,23 @@ impl AbstractMessage for DummyDB {
         todo!()
     }
 
-    async fn insert_message(&self, _message: &Message) -> Result<()> {
-        todo!()
+    async fn insert_message(&self, message: &Message) -> Result<()> {
+        info!("Insert {message:?}");
+        Ok(())
     }
     
     async fn update_message(
         &self,
-        _id: &str,
-        _message: &PartialMessage,
-        _remove: Vec<FieldsMessage>,
+        id: &str,
+        message: &PartialMessage,
+        remove: Vec<FieldsMessage>,
     ) -> Result<()> {
-        todo!()
+        info!("Update {id} with {message:?} and remove {remove:?}");
+        Ok(())
     }
 
-    async fn delete_message(&self, _id: &str) -> Result<()> {
-        todo!()
+    async fn delete_message(&self, id: &str) -> Result<()> {
+        info!("Delete {id}");
+        Ok(())
     }
 }

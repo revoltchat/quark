@@ -9,20 +9,23 @@ impl AbstractServerMember for DummyDB {
         todo!()
     }
     
-    async fn insert_member(&self, _server: &str, _user: &str) -> Result<()> {
-        todo!()
+    async fn insert_member(&self, server: &str, user: &str) -> Result<()> {
+        info!("Create {user} in {server}");
+        Ok(())
     }
     
     async fn update_member(
         &self,
-        _id: &str,
-        _member: &PartialMember,
-        _remove: Vec<FieldsMember>,
+        id: &str,
+        member: &PartialMember,
+        remove: Vec<FieldsMember>,
     ) -> Result<()> {
-        todo!()
+        info!("Update {id} with {member:?} and remove {remove:?}");
+        Ok(())
     }
 
     async fn delete_member(&self, _server: &str, _user: &str) -> Result<()> {
-        todo!()
+        info!("Delete {user} in {server}");
+        Ok(())
     }
 }

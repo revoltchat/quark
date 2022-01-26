@@ -9,20 +9,23 @@ impl AbstractServer for DummyDB {
         todo!()
     }
 
-    async fn insert_server(&self, _server: &Server) -> Result<()> {
-        todo!()
+    async fn insert_server(&self, server: &Server) -> Result<()> {
+        info!("Insert {server:?}");
+        Ok(())
     }
 
     async fn update_server(
         &self,
-        _id: &str,
-        _server: &PartialServer,
-        _remove: Vec<FieldsServer>,
+        id: &str,
+        server: &PartialServer,
+        remove: Vec<FieldsServer>,
     ) -> Result<()> {
-        todo!()
+        info!("Update {id} with {server:?} and remove {remove:?}");
+        Ok(())
     }
 
-    async fn delete_server(&self, _id: &str) -> Result<()> {
-        todo!()
+    async fn delete_server(&self, id: &str) -> Result<()> {
+        info!("Delete {id}");
+        Ok(())
     }
 }

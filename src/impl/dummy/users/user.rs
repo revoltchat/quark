@@ -8,7 +8,7 @@ impl AbstractUser for DummyDB {
     async fn fetch_user(&self, id: &str) -> Result<User> {
         Ok(User {
             id: id.into(),
-            username: "abc".into(),
+            username: "username".into(),
             avatar: None,
             relations: None,
 
