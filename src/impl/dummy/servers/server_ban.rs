@@ -1,6 +1,5 @@
-
-use crate::models::ServerBan;
 use crate::models::server_member::MemberCompositeKey;
+use crate::models::ServerBan;
 use crate::{AbstractServerBan, Result};
 
 use super::super::DummyDB;
@@ -11,14 +10,14 @@ impl AbstractServerBan for DummyDB {
         Ok(ServerBan {
             id: MemberCompositeKey {
                 server: server.into(),
-                user: user.into()
+                user: user.into(),
             },
-            reason: Some("ban reason".into())
+            reason: Some("ban reason".into()),
         })
     }
 
     async fn fetch_bans(&self, server: &str) -> Result<Vec<ServerBan>> {
-        Ok(vec![self.fetch_ban(server, "user".into()).await.unwrap()])
+        Ok(vec![self.fetch_ban(server, "user").await.unwrap()])
     }
 
     async fn insert_ban(&self, server: &str, user: &str) -> Result<()> {

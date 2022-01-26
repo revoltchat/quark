@@ -1,19 +1,27 @@
-use crate::models::server_member::{FieldsMember, Member, PartialMember};
+use crate::models::server_member::{FieldsMember, Member, MemberCompositeKey, PartialMember};
 use crate::{AbstractServerMember, Result};
 
 use super::super::DummyDB;
 
 #[async_trait]
 impl AbstractServerMember for DummyDB {
-    async fn fetch_member(&self, _server: &str, _user: &str) -> Result<Member> {
-        todo!()
+    async fn fetch_member(&self, server: &str, user: &str) -> Result<Member> {
+        Ok(Member {
+            id: MemberCompositeKey {
+                server: server.into(),
+                user: user.into(),
+            },
+            nickname: None,
+            avatar: None,
+            roles: None,
+        })
     }
-    
+
     async fn insert_member(&self, server: &str, user: &str) -> Result<()> {
         info!("Create {user} in {server}");
         Ok(())
     }
-    
+
     async fn update_member(
         &self,
         id: &str,
@@ -24,7 +32,7 @@ impl AbstractServerMember for DummyDB {
         Ok(())
     }
 
-    async fn delete_member(&self, _server: &str, _user: &str) -> Result<()> {
+    async fn delete_member(&self, server: &str, user: &str) -> Result<()> {
         info!("Delete {user} in {server}");
         Ok(())
     }

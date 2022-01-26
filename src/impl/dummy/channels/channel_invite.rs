@@ -5,15 +5,22 @@ use super::super::DummyDB;
 
 #[async_trait]
 impl AbstractChannelInvite for DummyDB {
-    async fn fetch_invite(&self, _code: &str) -> Result<Invite> {
-        todo!()
+    async fn fetch_invite(&self, code: &str) -> Result<Invite> {
+        Ok(Invite::Server {
+            code: code.into(),
+            server: "server".into(),
+            creator: "creator".into(),
+            channel: "channel".into(),
+        })
     }
 
-    async fn insert_invite(&self, _invite: &Invite) -> Result<()> {
-        todo!()
+    async fn insert_invite(&self, invite: &Invite) -> Result<()> {
+        info!("Insert {invite:?}");
+        Ok(())
     }
 
-    async fn delete_invite(&self, _code: &str) -> Result<()> {
-        todo!()
+    async fn delete_invite(&self, code: &str) -> Result<()> {
+        info!("Delete {code}");
+        Ok(())
     }
 }

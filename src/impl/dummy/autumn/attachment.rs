@@ -1,5 +1,5 @@
 use crate::models::attachment::File;
-use crate::{AbstractAttachment, Result};
+use crate::{AbstractAttachment, Error, Result};
 
 use super::super::DummyDB;
 
@@ -12,10 +12,11 @@ impl AbstractAttachment for DummyDB {
         _parent_type: &str,
         _parent_id: &str,
     ) -> Result<File> {
-        todo!()
+        Err(Error::UnknownAttachment)
     }
 
-    async fn insert_attachment(&self, _attachment: &File) -> Result<()> {
-        todo!()
+    async fn insert_attachment(&self, attachment: &File) -> Result<()> {
+        info!("Insert {attachment:?}");
+        Ok(())
     }
 }

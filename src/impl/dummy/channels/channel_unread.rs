@@ -6,6 +6,6 @@ use super::super::DummyDB;
 #[async_trait]
 impl AbstractChannelUnread for DummyDB {
     async fn fetch_unreads(&self, _user: &str) -> Result<Vec<ChannelUnread>> {
-        todo!()
+        Ok(vec![])
     }
 }
