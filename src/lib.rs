@@ -17,6 +17,7 @@ mod database;
 mod permissions;
 mod traits;
 mod util;
+
 pub use database::*;
 pub use traits::*;
 pub use util::result::{EmptyResponse, Error, Result};

@@ -82,3 +82,59 @@ impl User {
         todo!()
     }
 }
+
+use rauth::entities::Session;
+use rocket::http::Status;
+use rocket::request::{self, FromRequest, Outcome, Request};
+
+#[rocket::async_trait]
+impl<'r> FromParam<'r> for Ref {
+    type Error = &'r str;
+
+    async fn from_param(param: &'r str) -> Result<Self, Self::Error> {
+        User::fetch_user(param)
+            .await
+            .map_err(|_| "Failed to fetch user.")
+    }
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for User {
+    type Error = rauth::util::Error;
+
+    async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
+        let user: &Option<User> = request.local_cache_async(async {
+            let header_bot_token = request
+                .headers()
+                .get("x-bot-token")
+                .next()
+                .map(|x| x.to_string());
+
+            if let Some(bot_token) = header_bot_token {
+                if let Ok(bot) = Bot::fetch_bot_by_token(&bot_token) {
+                    if let Ok(user) = User::fetch_user(&bot.id) {
+                        return Some(user)
+                    }
+                }
+            } else {
+                if let Outcome::Success(session) = request.guard::<Session>().await {
+                    if let Ok(user) = User::fetch_user(&session.user_id) {
+                        return Some(user)
+                    }
+                }   
+            }
+
+            None
+        }).await;
+
+        if let Some(user) = user {
+            Outcome::Success(user.clone())
+        } else {
+            Outcome::Failure((
+                Status::Forbidden,
+                rauth::util::Error::InvalidSession,
+            ))
+        }
+    }
+}
+
