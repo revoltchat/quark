@@ -19,4 +19,4 @@ mod traits;
 mod util;
 pub use database::*;
 pub use traits::*;
-pub use util::result::{Error, Result};
+pub use util::result::{EmptyResponse, Error, Result};
