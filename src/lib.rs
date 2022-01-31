@@ -8,6 +8,8 @@ extern crate impl_ops;
 extern crate optional_struct;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate bitfield;
 
 pub mod r#impl;
 pub mod models;
@@ -20,4 +22,6 @@ mod util;
 
 pub use database::*;
 pub use traits::*;
+
+pub use util::r#ref::Ref;
 pub use util::result::{EmptyResponse, Error, Result};

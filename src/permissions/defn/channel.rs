@@ -36,4 +36,18 @@ lazy_static! {
         + ChannelPermission::UploadFiles;
 }
 
-// pub struct ChannelPermissions();
+bitfield! {
+    pub struct ChannelPermissions(MSB0 [u32]);
+    u32;
+    pub get_view, _: 31;
+    pub get_send_message, _: 30;
+    pub get_manage_messages, _: 29;
+    pub get_manage_channel, _: 28;
+    pub get_voice_call, _: 27;
+    pub get_invite_others, _: 26;
+    pub get_embed_links, _: 25;
+    pub get_upload_files, _: 24;
+    pub get_masquerade, _: 23;
+}
+
+pub type ChannelPerms = ChannelPermissions<[u32; 1]>;

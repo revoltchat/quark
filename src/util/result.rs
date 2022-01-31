@@ -6,7 +6,7 @@ use rocket::{
 };
 use serde::Serialize;
 use std::io::Cursor;
-// use validator::ValidationErrors;
+use validator::ValidationErrors;
 
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "type")]
@@ -62,9 +62,9 @@ pub enum Error {
     DuplicateNonce,
     VosoUnavailable,
     NotFound,
-    /*FailedValidation {
-        error: ValidationErrors
-    }*/
+    FailedValidation {
+        error: ValidationErrors,
+    },
 }
 
 pub struct EmptyResponse;
@@ -122,6 +122,7 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::DuplicateNonce => Status::Conflict,
             Error::VosoUnavailable => Status::BadRequest,
             Error::NotFound => Status::NotFound,
+            Error::FailedValidation { .. } => Status::BadRequest,
         };
 
         // Serialize the error data structure into JSON.

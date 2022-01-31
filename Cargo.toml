@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-test = [ "async-std", "mongodb/async-std-runtime", "rocket" ]
+test = [ "async-std", "mongodb/async-std-runtime", "rocket", "rauth" ]
 default = [ "test" ]
 
 [dependencies]
@@ -29,7 +29,9 @@ log = "0.4"
 ops = "0.6.0"
 impl_ops = "0.1.1"
 num_enum = "0.5.6"
+bitfield = "0.13.2"
 lazy_static = "1.4.0"
 
 # Implementations
+rauth = { optional = true, git = "https://github.com/insertish/rauth", rev = "157263ffcbd6cb1073e288b215db227634c4c29a" }
 rocket = { optional = true, version = "0.5.0-rc.1", default-features = false, features = ["json"] }

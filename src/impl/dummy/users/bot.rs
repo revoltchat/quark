@@ -1,4 +1,3 @@
-
 use crate::models::bot::{Bot, FieldsBot, PartialBot};
 use crate::{AbstractBot, Result};
 
@@ -14,8 +13,12 @@ impl AbstractBot for DummyDB {
             public: true,
             analytics: true,
             discoverable: true,
-            interactions_url: None
+            interactions_url: None,
         })
+    }
+
+    async fn fetch_bot_by_token(&self, _token: &str) -> Result<Bot> {
+        self.fetch_bot("bot").await
     }
 
     async fn insert_bot(&self, bot: &Bot) -> Result<()> {

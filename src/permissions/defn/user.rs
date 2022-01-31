@@ -13,4 +13,13 @@ pub enum UserPermission {
 impl_op_ex!(+ |a: &UserPermission, b: &UserPermission| -> u32 { *a as u32 | *b as u32 });
 impl_op_ex_commutative!(+ |a: &u32, b: &UserPermission| -> u32 { *a | *b as u32 });
 
-pub struct UserPermissions();
+bitfield! {
+    pub struct UserPermissions(MSB0 [u32]);
+    u32;
+    pub get_access, _: 31;
+    pub get_view_profile, _: 30;
+    pub get_send_message, _: 29;
+    pub get_invite, _: 28;
+}
+
+pub type UserPerms = UserPermissions<[u32; 1]>;
