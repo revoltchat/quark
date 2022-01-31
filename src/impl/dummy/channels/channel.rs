@@ -1,5 +1,5 @@
 use crate::models::channel::{Channel, FieldsChannel /*PartialChannel*/};
-use crate::{AbstractChannel, Result};
+use crate::{AbstractChannel, Error, Result};
 
 use super::super::DummyDB;
 
@@ -31,5 +31,9 @@ impl AbstractChannel for DummyDB {
     async fn delete_channel(&self, id: &str) -> Result<()> {
         info!("Delete {id}");
         Ok(())
+    }
+
+    async fn find_direct_message_channel(&self, _user_a: &str, _user_b: &str) -> Result<Channel> {
+        Err(Error::NotFound)
     }
 }

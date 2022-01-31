@@ -8,6 +8,8 @@ use serde::Serialize;
 use std::io::Cursor;
 use validator::ValidationErrors;
 
+use crate::UserPermission;
+
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Error {
@@ -56,7 +58,9 @@ pub enum Error {
         operation: &'static str,
         with: &'static str,
     },
-    MissingPermission,
+    MissingPermission {
+        permission: i32,
+    },
     InvalidOperation,
     InvalidCredentials,
     DuplicateNonce,
@@ -65,6 +69,20 @@ pub enum Error {
     FailedValidation {
         error: ValidationErrors,
     },
+}
+
+impl Error {
+    pub fn from_permission<T>(permission: UserPermission) -> Result<T> {
+        Err(Error::MissingPermission {
+            permission: permission as u32 as i32,
+        })
+    }
+
+    pub fn from_invalid<T>(validation_error: ValidationErrors) -> Result<T> {
+        Err(Error::FailedValidation {
+            error: validation_error,
+        })
+    }
 }
 
 pub struct EmptyResponse;
@@ -116,7 +134,7 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::BotIsPrivate => Status::Forbidden,
 
             Error::DatabaseError { .. } => Status::InternalServerError,
-            Error::MissingPermission => Status::Forbidden,
+            Error::MissingPermission { .. } => Status::Forbidden,
             Error::InvalidOperation => Status::BadRequest,
             Error::InvalidCredentials => Status::Forbidden,
             Error::DuplicateNonce => Status::Conflict,

@@ -1,2 +1,5 @@
-pub mod channel;
-pub mod user;
+mod channel;
+mod user;
+
+pub use channel::*;
+pub use user::*;

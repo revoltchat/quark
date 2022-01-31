@@ -51,4 +51,8 @@ impl AbstractUser for DummyDB {
     async fn is_username_taken(&self, _username: &str) -> Result<bool> {
         Ok(false)
     }
+
+    async fn have_mutual_connection(&self, _user_a: &str, _user_b: &str) -> Result<bool> {
+        Ok(true)
+    }
 }

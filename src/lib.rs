@@ -23,5 +23,8 @@ mod util;
 pub use database::*;
 pub use traits::*;
 
+pub use permissions::defn::*;
+pub use permissions::perms;
+
 pub use util::r#ref::Ref;
 pub use util::result::{EmptyResponse, Error, Result};
