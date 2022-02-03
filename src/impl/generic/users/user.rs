@@ -1,4 +1,4 @@
-use crate::models::user::{Badges, FieldsUser, RelationshipStatus, User};
+use crate::models::user::{Badges, FieldsUser, PartialUser, RelationshipStatus, User};
 use crate::permissions::defn::UserPerms;
 use crate::{Database, Result};
 
@@ -9,10 +9,9 @@ impl_op_ex_commutative!(+ |a: &i32, b: &Badges| -> i32 { *a | *b as i32 });
 
 impl User {
     /// Remove a field from User object
-    pub fn remove(&mut self, field: FieldsUser) {
+    pub fn remove(&mut self, field: &FieldsUser) {
         match field {
             FieldsUser::Avatar => self.avatar = None,
-            FieldsUser::Badges => self.badges = None,
             FieldsUser::StatusText => {
                 if let Some(x) = self.status.as_mut() {
                     x.text = None;
@@ -33,7 +32,6 @@ impl User {
                     x.background = None;
                 }
             }
-            FieldsUser::Flags => self.flags = None,
         }
     }
 
@@ -83,7 +81,20 @@ impl User {
     }
 
     /// Update a user's username
-    //pub async fn update_username(&self, db: &Database, username: &str) -> 
+    pub async fn update_username(&mut self, db: &Database, username: String) -> Result<()> {
+        self.username = username.clone();
+        db.update_user(
+            &self.id,
+            &PartialUser {
+                username: Some(username),
+                ..Default::default()
+            },
+            vec![],
+        )
+        .await?;
+
+        Ok(())
+    }
 }
 
 use rauth::entities::Session;

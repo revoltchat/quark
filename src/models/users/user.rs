@@ -34,9 +34,10 @@ pub enum Presence {
 }
 
 /// User's active status
-#[derive(Serialize, Deserialize, Debug, Clone, Validate)]
+#[derive(Serialize, Deserialize, Debug, Clone, Validate, Default)]
 pub struct UserStatus {
     /// Custom status text
+    #[validate(length(min = 1, max = 128))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
     /// Current presence option
@@ -45,7 +46,7 @@ pub struct UserStatus {
 }
 
 /// User's profile
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct UserProfile {
     /// Text content on user's profile
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -131,13 +132,11 @@ pub struct User {
 }
 
 /// Optional fields on user object
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum FieldsUser {
     Avatar,
-    Badges,
     StatusText,
     StatusPresence,
     ProfileContent,
     ProfileBackground,
-    Flags,
 }

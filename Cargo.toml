@@ -33,5 +33,5 @@ bitfield = "0.13.2"
 lazy_static = "1.4.0"
 
 # Implementations
-rauth = { optional = true, git = "https://github.com/insertish/rauth", rev = "157263ffcbd6cb1073e288b215db227634c4c29a" }
+rauth = { optional = true, git = "https://github.com/insertish/rauth", rev = "501d445e7b42a1c229bfa88c01fa6415f4cb7992" }
 rocket = { optional = true, version = "0.5.0-rc.1", default-features = false, features = ["json"] }
