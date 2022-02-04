@@ -125,6 +125,10 @@ impl User {
 
     /// Update a user's username
     pub async fn update_username(&mut self, db: &Database, username: String) -> Result<()> {
+        if db.is_username_taken(&username).await? {
+            return Err(Error::UsernameTaken);
+        }
+
         self.username = username.clone();
         db.update_user(
             &self.id,

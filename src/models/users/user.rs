@@ -89,7 +89,7 @@ pub struct BotInformation {
 }
 
 /// Representiation of a User on Revolt.
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default)]
 #[optional_name = "PartialUser"]
 pub struct User {

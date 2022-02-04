@@ -15,6 +15,9 @@ use crate::UserPermission;
 pub enum Error {
     LabelMe,
 
+    // ? Onboarding related errors.
+    AlreadyOnboarded,
+
     // ? User related errors.
     UsernameTaken,
     UnknownUser,
@@ -104,6 +107,8 @@ impl<'r> Responder<'r, 'static> for Error {
     fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
         let status = match self {
             Error::LabelMe => Status::InternalServerError,
+
+            Error::AlreadyOnboarded => Status::Forbidden,
 
             Error::UnknownUser => Status::NotFound,
             Error::UsernameTaken => Status::Conflict,
