@@ -24,7 +24,7 @@ pub trait AbstractUser: Sync + Send {
     async fn delete_user(&self, id: &str) -> Result<()>;
 
     /// Fetch multiple users by their ids
-    async fn fetch_users(&self, ids: &'static [String]) -> Result<Vec<User>>;
+    async fn fetch_users<'a>(&self, ids: &'a [String]) -> Result<Vec<User>>;
 
     /// Check whether a username is already in use by another user
     async fn is_username_taken(&self, username: &str) -> Result<bool>;

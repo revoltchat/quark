@@ -63,4 +63,14 @@ impl AbstractChannel for DummyDB {
         info!("Removed {user} from {channel}");
         Ok(())
     }
+
+    async fn set_channel_role_permission(
+        &self,
+        channel: &str,
+        role: &str,
+        permissions: u32,
+    ) -> Result<()> {
+        info!("Updating permissions for role {role} in {channel} with {permissions}");
+        Ok(())
+    }
 }

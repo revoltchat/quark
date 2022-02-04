@@ -10,6 +10,9 @@ pub trait AbstractChannel: Sync + Send {
     async fn insert_channel(&self, channel: &Channel) -> Result<()>;
 
     /// Update an existing channel using some data
+    /// ! TODO: we need separate Channel::update which also sends out the relevant events
+    /// ! also applies to other methods I guess, try to restrict event bound methods to
+    /// ! the models themselves instead of the abstract database
     async fn update_channel(
         &self,
         id: &str,
@@ -35,4 +38,12 @@ pub trait AbstractChannel: Sync + Send {
 
     /// Remove a user from a group
     async fn remove_user_from_group(&self, channel: &str, user: &str) -> Result<()>;
+
+    /// Set role permission for a channel
+    async fn set_channel_role_permission(
+        &self,
+        channel: &str,
+        role: &str,
+        permissions: u32,
+    ) -> Result<()>;
 }

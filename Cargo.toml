@@ -30,6 +30,7 @@ log = "0.4"
 # Util
 ops = "0.6.0"
 ulid = "0.5.0"
+nanoid = "0.4.0"
 impl_ops = "0.1.1"
 num_enum = "0.5.6"
 bitfield = "0.13.2"

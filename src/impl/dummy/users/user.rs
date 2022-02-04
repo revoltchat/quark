@@ -48,7 +48,7 @@ impl AbstractUser for DummyDB {
         Ok(())
     }
 
-    async fn fetch_users(&self, _id: &'static [String]) -> Result<Vec<User>> {
+    async fn fetch_users<'a>(&self, _id: &'a [String]) -> Result<Vec<User>> {
         Ok(vec![self.fetch_user("id").await.unwrap()])
     }
 
@@ -74,10 +74,12 @@ impl AbstractUser for DummyDB {
         target_id: &str,
         relationship: &RelationshipStatus,
     ) -> Result<()> {
+        info!("Set relationship from {user_id} to {target_id} as {relationship:?}");
         Ok(())
     }
 
     async fn pull_relationship(&self, user_id: &str, target_id: &str) -> Result<()> {
+        info!("Removing relationship from {user_id} to {target_id}");
         Ok(())
     }
 }

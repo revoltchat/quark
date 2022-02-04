@@ -143,6 +143,10 @@ pub struct PartialChannel {
     pub nsfw: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub permissions: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_permissions: Option<i32>,
 }
 
 /// Optional fields on channel object

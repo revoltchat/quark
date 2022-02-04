@@ -3,6 +3,8 @@ use crate::models::{user::RelationshipStatus, Channel, Member, Server, User};
 pub mod defn;
 pub mod r#impl;
 
+pub use r#impl::user::get_relationship;
+
 pub struct PermissionCalculator<'a> {
     perspective: &'a User,
 
