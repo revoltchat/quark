@@ -1,5 +1,5 @@
 use crate::models::attachment::File;
-use crate::{AbstractAttachment, Error, Result};
+use crate::{AbstractAttachment, Result};
 
 use super::super::DummyDB;
 
@@ -27,6 +27,16 @@ impl AbstractAttachment for DummyDB {
 
     async fn insert_attachment(&self, attachment: &File) -> Result<()> {
         info!("Insert {attachment:?}");
+        Ok(())
+    }
+
+    async fn mark_attachment_as_reported(&self, id: &str) -> Result<()> {
+        info!("Marked {id} as reported");
+        Ok(())
+    }
+
+    async fn mark_attachment_as_deleted(&self, id: &str) -> Result<()> {
+        info!("Marked {id} as deleted");
         Ok(())
     }
 }

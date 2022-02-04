@@ -5,10 +5,12 @@ use crate::Result;
 pub trait AbstractAttachment: Sync + Send {
     async fn find_and_use_attachment(
         &self,
-        attachment_id: &str,
+        id: &str,
         tag: &str,
         parent_type: &str,
         parent_id: &str,
     ) -> Result<File>;
     async fn insert_attachment(&self, attachment: &File) -> Result<()>;
+    async fn mark_attachment_as_reported(&self, id: &str) -> Result<()>;
+    async fn mark_attachment_as_deleted(&self, id: &str) -> Result<()>;
 }
