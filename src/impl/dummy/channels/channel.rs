@@ -1,15 +1,28 @@
-use crate::models::channel::{Channel, FieldsChannel /*PartialChannel*/};
-use crate::{AbstractChannel, Error, Result};
+use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
+use crate::{AbstractAttachment, AbstractChannel, Error, Result};
 
 use super::super::DummyDB;
 
 #[async_trait]
 impl AbstractChannel for DummyDB {
     async fn fetch_channel(&self, id: &str) -> Result<Channel> {
-        // ! FIXME: we can probably mock this better
-        Ok(Channel::SavedMessages {
+        Ok(Channel::Group {
             id: id.into(),
-            user: "user".into(),
+
+            name: "group".into(),
+            owner: "owner".into(),
+            description: None,
+            recipients: vec!["owner".into()],
+
+            icon: Some(
+                self.find_and_use_attachment("dummy", "dummy", "dummy", "dummy")
+                    .await?,
+            ),
+            last_message_id: None,
+
+            permissions: None,
+
+            nsfw: false,
         })
     }
 
@@ -21,10 +34,10 @@ impl AbstractChannel for DummyDB {
     async fn update_channel(
         &self,
         id: &str,
-        // channel: &PartialChannel,
+        channel: &PartialChannel,
         remove: Vec<FieldsChannel>,
     ) -> Result<()> {
-        info!("Update {id} with -null- and remove {remove:?}");
+        info!("Update {id} with {channel:?} and remove {remove:?}");
         Ok(())
     }
 
@@ -39,5 +52,15 @@ impl AbstractChannel for DummyDB {
 
     async fn find_direct_message_channel(&self, _user_a: &str, _user_b: &str) -> Result<Channel> {
         Err(Error::NotFound)
+    }
+
+    async fn add_user_to_group(&self, channel: &str, user: &str) -> Result<()> {
+        info!("Added {user} to {channel}");
+        Ok(())
+    }
+
+    async fn remove_user_from_group(&self, channel: &str, user: &str) -> Result<()> {
+        info!("Removed {user} from {channel}");
+        Ok(())
     }
 }

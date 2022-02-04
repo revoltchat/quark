@@ -129,8 +129,24 @@ pub enum Channel {
     },
 }
 
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PartialChannel {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub icon: Option<File>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub nsfw: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active: Option<bool>,
+}
+
 /// Optional fields on channel object
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum FieldsChannel {
     Description,
     Icon,

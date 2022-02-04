@@ -6,7 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-test = [ "async-std", "mongodb/async-std-runtime", "rocket", "rauth" ]
+test = [ "async-std", "mongodb/async-std-runtime", "rocket_impl", "rauth" ]
+rocket_impl = [ "rocket" ]
 default = [ "test" ]
 
 [dependencies]

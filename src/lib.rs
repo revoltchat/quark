@@ -28,3 +28,9 @@ pub use permissions::perms;
 
 pub use util::r#ref::Ref;
 pub use util::result::{EmptyResponse, Error, Result};
+
+#[cfg(feature = "rocket_impl")]
+use rocket::State;
+
+#[cfg(feature = "rocket_impl")]
+pub type Db = State<Database>;
