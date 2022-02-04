@@ -1,7 +1,9 @@
-use crate::models::user::{Badges, FieldsUser, PartialUser, RelationshipStatus, User};
+use crate::models::user::{Badges, FieldsUser, PartialUser, Presence, RelationshipStatus, User};
 use crate::permissions::defn::UserPerms;
-use crate::{Database, Result};
+use crate::permissions::r#impl::user::get_relationship;
+use crate::{perms, Database, Error, Result};
 
+use futures::try_join;
 use impl_ops::impl_op_ex_commutative;
 use std::ops;
 
@@ -35,32 +37,73 @@ impl User {
         }
     }
 
-    /// Mutate the user object to include relationship as seen by user
-    pub fn from(/*mut */ self, _user: &User) -> User {
-        todo!()
+    /// Mutate the user object to remove redundant information
+    #[must_use]
+    pub fn foreign(mut self) -> User {
+        self.profile = None;
+        self.relations = None;
+        self.online = Some(true);
+
+        let mut badges = self.badges.unwrap_or(0);
+        if let Ok(id) = ulid::Ulid::from_string(&self.id) {
+            // Yes, this is hard-coded
+            // No, I don't care + ratio
+            if id.datetime().timestamp_millis() < 1629638578431 {
+                badges = badges + Badges::EarlyAdopter;
+            }
+        }
+
+        self.badges = Some(badges);
+
+        if let Some(status) = &self.status {
+            if let Some(presence) = &status.presence {
+                if presence == &Presence::Invisible {
+                    self.status = None;
+                    self.online = Some(false);
+                }
+            }
+        }
+
+        self
     }
 
-    /// Apply any relevant badges
-    pub fn apply_badges(/*mut */ self) -> User {
-        todo!()
+    /// Mutate the user object to include relationship (if it does not already exist)
+    #[must_use]
+    pub fn with_relationship(self, perspective: &User) -> User {
+        let mut user = self.foreign();
+
+        if user.relationship.is_none() {
+            user.relationship = Some(get_relationship(perspective, &user.id));
+        }
+
+        user
     }
 
-    /// Mutate the user object to appear as seen by user
-    pub fn with(self, _permissions: UserPerms) -> User {
-        todo!()
+    /// Mutate user object with given permission
+    #[must_use]
+    pub fn apply_permission(mut self, permission: &UserPerms) -> User {
+        if !permission.get_view_profile() {
+            self.status = None;
+        }
+
+        self
     }
 
-    /// Mutate the user object to appear as seen by user
-    /// Also overrides the relationship status
-    pub async fn from_override(
-        /*mut */ self,
-        _user: &User,
-        _relationship: RelationshipStatus,
-    ) -> Result<User> {
-        todo!()
+    /// Helper function to apply relationship and permission
+    #[must_use]
+    pub fn with_perspective(self, perspective: &User, permission: &UserPerms) -> User {
+        self.with_relationship(perspective)
+            .apply_permission(permission)
     }
 
-    /// Utility function to get all of a user's memberships
+    /// Helper function to calculate perspective
+    pub async fn with_auto_perspective(self, db: &Database, perspective: &User) -> User {
+        let user = self.with_relationship(perspective);
+        let permissions = perms(perspective).user(&user).calc_user(db).await;
+        user.apply_permission(&permissions)
+    }
+
+    /*/// Utility function to get all of a user's memberships
     pub async fn fetch_memberships(&self, _db: &Database) -> Result<Vec<String>> {
         todo!();
     }
@@ -78,7 +121,7 @@ impl User {
     /// Check if this user can acquire another server
     pub async fn can_acquire_server(&self, _db: &Database, _id: &str) -> Result<bool> {
         todo!()
-    }
+    }*/
 
     /// Update a user's username
     pub async fn update_username(&mut self, db: &Database, username: String) -> Result<()> {
@@ -94,6 +137,133 @@ impl User {
         .await?;
 
         Ok(())
+    }
+
+    /// Apply a certain relationship between two users
+    pub async fn apply_relationship(
+        &self,
+        db: &Database,
+        target: &mut User,
+        local: RelationshipStatus,
+        remote: RelationshipStatus,
+    ) -> Result<()> {
+        if try_join!(
+            db.set_relationship(&self.id, &target.id, &local),
+            db.set_relationship(&target.id, &self.id, &remote)
+        )
+        .is_err()
+        {
+            return Err(Error::DatabaseError {
+                operation: "update_one",
+                with: "user",
+            });
+        }
+
+        target.relationship.replace(local);
+        Ok(())
+    }
+
+    /// Add another user as a friend
+    pub async fn add_friend(&self, db: &Database, target: &mut User) -> Result<()> {
+        match get_relationship(self, &target.id) {
+            RelationshipStatus::User => Err(Error::NoEffect),
+            RelationshipStatus::Friend => Err(Error::AlreadyFriends),
+            RelationshipStatus::Outgoing => Err(Error::AlreadySentRequest),
+            RelationshipStatus::Blocked => Err(Error::Blocked),
+            RelationshipStatus::BlockedOther => Err(Error::BlockedByOther),
+            RelationshipStatus::Incoming => {
+                self.apply_relationship(
+                    db,
+                    target,
+                    RelationshipStatus::Friend,
+                    RelationshipStatus::Friend,
+                )
+                .await
+            }
+            RelationshipStatus::None => {
+                self.apply_relationship(
+                    db,
+                    target,
+                    RelationshipStatus::Outgoing,
+                    RelationshipStatus::Incoming,
+                )
+                .await
+            }
+        }
+    }
+
+    /// Remove another user as a friend
+    pub async fn remove_friend(&self, db: &Database, target: &mut User) -> Result<()> {
+        match get_relationship(self, &target.id) {
+            RelationshipStatus::Friend
+            | RelationshipStatus::Outgoing
+            | RelationshipStatus::Incoming => {
+                self.apply_relationship(
+                    db,
+                    target,
+                    RelationshipStatus::None,
+                    RelationshipStatus::None,
+                )
+                .await
+            }
+            _ => Err(Error::NoEffect),
+        }
+    }
+
+    /// Block another user
+    pub async fn block_user(&self, db: &Database, target: &mut User) -> Result<()> {
+        match get_relationship(self, &target.id) {
+            RelationshipStatus::User | RelationshipStatus::Blocked => Err(Error::NoEffect),
+            RelationshipStatus::BlockedOther => {
+                self.apply_relationship(
+                    db,
+                    target,
+                    RelationshipStatus::Blocked,
+                    RelationshipStatus::Blocked,
+                )
+                .await
+            }
+            RelationshipStatus::None
+            | RelationshipStatus::Friend
+            | RelationshipStatus::Incoming
+            | RelationshipStatus::Outgoing => {
+                self.apply_relationship(
+                    db,
+                    target,
+                    RelationshipStatus::Blocked,
+                    RelationshipStatus::BlockedOther,
+                )
+                .await
+            }
+        }
+    }
+
+    /// Unblock another user
+    pub async fn unblock_user(&self, db: &Database, target: &mut User) -> Result<()> {
+        match get_relationship(self, &target.id) {
+            RelationshipStatus::Blocked => match get_relationship(target, &self.id) {
+                RelationshipStatus::Blocked => {
+                    self.apply_relationship(
+                        db,
+                        target,
+                        RelationshipStatus::BlockedOther,
+                        RelationshipStatus::Blocked,
+                    )
+                    .await
+                }
+                RelationshipStatus::BlockedOther => {
+                    self.apply_relationship(
+                        db,
+                        target,
+                        RelationshipStatus::None,
+                        RelationshipStatus::None,
+                    )
+                    .await
+                }
+                _ => Err(Error::InternalError),
+            },
+            _ => Err(Error::NoEffect),
+        }
     }
 }
 

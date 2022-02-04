@@ -57,6 +57,13 @@ impl<'a> PermissionCalculator<'a> {
             ..self
         }
     }
+
+    pub fn with_relationship(self, relationship: &'a RelationshipStatus) -> PermissionCalculator {
+        PermissionCalculator {
+            flag_known_relationship: Some(relationship),
+            ..self
+        }
+    }
 }
 
 pub fn perms(perspective: &'_ User) -> PermissionCalculator<'_> {

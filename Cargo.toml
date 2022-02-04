@@ -19,6 +19,7 @@ validator = { version = "0.14", features = ["derive"] }
 mongodb = { version = "2.1.0", default-features = false }
 
 # Async
+futures = "0.3.19"
 async-trait = "0.1.51"
 async-std = { version = "1.8.0", features = ["attributes"], optional = true }
 
@@ -27,6 +28,7 @@ log = "0.4"
 
 # Util
 ops = "0.6.0"
+ulid = "0.5.0"
 impl_ops = "0.1.1"
 num_enum = "0.5.6"
 bitfield = "0.13.2"

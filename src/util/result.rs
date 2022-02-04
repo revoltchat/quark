@@ -58,6 +58,7 @@ pub enum Error {
         operation: &'static str,
         with: &'static str,
     },
+    InternalError,
     MissingPermission {
         permission: i32,
     },
@@ -66,6 +67,7 @@ pub enum Error {
     DuplicateNonce,
     VosoUnavailable,
     NotFound,
+    NoEffect,
     FailedValidation {
         error: ValidationErrors,
     },
@@ -134,12 +136,14 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::BotIsPrivate => Status::Forbidden,
 
             Error::DatabaseError { .. } => Status::InternalServerError,
+            Error::InternalError => Status::InternalServerError,
             Error::MissingPermission { .. } => Status::Forbidden,
             Error::InvalidOperation => Status::BadRequest,
             Error::InvalidCredentials => Status::Forbidden,
             Error::DuplicateNonce => Status::Conflict,
             Error::VosoUnavailable => Status::BadRequest,
             Error::NotFound => Status::NotFound,
+            Error::NoEffect => Status::Ok,
             Error::FailedValidation { .. } => Status::BadRequest,
         };
 

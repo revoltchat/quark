@@ -55,10 +55,12 @@ async fn calculate_permission(
         return u32::MAX;
     }
 
-    let relationship = data
-        .flag_known_relationship
-        .cloned()
-        .unwrap_or_else(|| get_relationship(data.perspective, &user.id));
+    let relationship = data.flag_known_relationship.cloned().unwrap_or_else(|| {
+        user.relationship
+            .as_ref()
+            .cloned()
+            .unwrap_or_else(|| get_relationship(data.perspective, &user.id))
+    });
 
     let mut permissions: u32 = 0;
     match relationship {
@@ -82,7 +84,7 @@ async fn calculate_permission(
         || db
             .have_mutual_connection(&data.perspective.id, &user.id)
             .await
-            .unwrap_or_else(|_| false)
+            .unwrap_or(false)
     {
         return UserPermission::Access + UserPermission::ViewProfile;
     }

@@ -33,6 +33,10 @@ impl AbstractChannel for DummyDB {
         Ok(())
     }
 
+    async fn find_direct_messages(&self, user_id: &str) -> Result<Vec<Channel>> {
+        Ok(vec![self.fetch_channel(user_id).await?])
+    }
+
     async fn find_direct_message_channel(&self, _user_a: &str, _user_b: &str) -> Result<Channel> {
         Err(Error::NotFound)
     }

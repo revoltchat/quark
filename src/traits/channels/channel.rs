@@ -20,6 +20,11 @@ pub trait AbstractChannel: Sync + Send {
     /// Delete a channel by its id
     async fn delete_channel(&self, id: &str) -> Result<()>;
 
+    /// Find a direct messages that a user is involved in
+    ///
+    /// Returns both group DMs and any DMs marked as "active".
+    async fn find_direct_messages(&self, user_id: &str) -> Result<Vec<Channel>>;
+
     /// Find a direct message channel between two users
     async fn find_direct_message_channel(&self, user_a: &str, user_b: &str) -> Result<Channel>;
 }

@@ -1,4 +1,4 @@
-use crate::models::user::{FieldsUser, PartialUser, User};
+use crate::models::user::{FieldsUser, PartialUser, RelationshipStatus, User};
 use crate::{AbstractUser, Result};
 
 use super::super::DummyDB;
@@ -22,6 +22,10 @@ impl AbstractUser for DummyDB {
             relationship: None,
             online: None,
         })
+    }
+
+    async fn fetch_user_by_username(&self, username: &str) -> Result<User> {
+        self.fetch_user(username).await
     }
 
     async fn insert_user(&self, user: &User) -> Result<()> {
@@ -54,5 +58,26 @@ impl AbstractUser for DummyDB {
 
     async fn have_mutual_connection(&self, _user_a: &str, _user_b: &str) -> Result<bool> {
         Ok(true)
+    }
+
+    async fn fetch_mutual_user_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
+        Ok(vec!["a".into()])
+    }
+
+    async fn fetch_mutual_server_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
+        Ok(vec!["b".into()])
+    }
+
+    async fn set_relationship(
+        &self,
+        user_id: &str,
+        target_id: &str,
+        relationship: &RelationshipStatus,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    async fn pull_relationship(&self, user_id: &str, target_id: &str) -> Result<()> {
+        Ok(())
     }
 }
