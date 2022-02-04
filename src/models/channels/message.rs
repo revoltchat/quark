@@ -4,6 +4,28 @@ use validator::Validate;
 
 use crate::{models::attachment::File, types::january::Embed};
 
+/// Representation of a message reply before it is sent.
+#[derive(Serialize, Deserialize)]
+pub struct Reply {
+    pub id: String,
+    pub mention: bool,
+}
+
+/// Representation of a text embed before it is sent.
+#[derive(Validate, Serialize, Deserialize, Clone, Debug)]
+pub struct SendableEmbed {
+    #[validate(length(min = 1, max = 128))]
+    pub icon_url: Option<String>,
+    pub url: Option<String>,
+    #[validate(length(min = 1, max = 100))]
+    pub title: Option<String>,
+    #[validate(length(min = 1, max = 2000))]
+    pub description: Option<String>,
+    pub media: Option<String>,
+    #[validate(length(min = 1, max = 64))]
+    pub colour: Option<String>,
+}
+
 /// Representation of a system event message
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
@@ -54,7 +76,7 @@ pub struct Masquerade {
 }
 
 /// Representation of a Message on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default)]
 #[optional_name = "PartialMessage"]
 pub struct Message {

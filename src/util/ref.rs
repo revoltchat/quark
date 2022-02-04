@@ -1,7 +1,7 @@
 use rocket::request::FromParam;
 use serde::{Deserialize, Serialize};
 
-use crate::models::{Channel, Server, User};
+use crate::models::{Channel, Server, User, Message};
 use crate::{Database, Result};
 
 #[derive(Serialize, Deserialize)]
@@ -24,6 +24,10 @@ impl Ref {
 
     pub async fn as_server(&self, db: &Database) -> Result<Server> {
         db.fetch_server(&self.id).await
+    }
+
+    pub async fn as_message(&self, db: &Database) -> Result<Message> {
+        db.fetch_message(&self.id).await
     }
 }
 
