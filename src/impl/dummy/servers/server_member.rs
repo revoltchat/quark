@@ -37,7 +37,7 @@ impl AbstractServerMember for DummyDB {
         Ok(())
     }
 
-    async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>> {
+    async fn fetch_members<'a>(&self, server: &str, _ids: &'a [String]) -> Result<Vec<Member>> {
         Ok(vec![self.fetch_member(server, "member").await.unwrap()])
     }
 }

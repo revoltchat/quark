@@ -1,7 +1,7 @@
 use crate::models::Channel;
 
 impl Channel {
-    pub fn id<'a>(&'a self) -> &'a str {
+    pub fn id(&'_ self) -> &'_ str {
         match self {
             Channel::DirectMessage { id, .. }
             | Channel::Group { id, .. }

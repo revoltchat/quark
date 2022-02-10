@@ -35,4 +35,12 @@ impl AbstractBot for DummyDB {
         info!("Delete {id}");
         Ok(())
     }
+
+    async fn fetch_bots_by_user(&self, user_id: &str) -> Result<Vec<Bot>> {
+        Ok(vec![self.fetch_bot(user_id).await.unwrap()])
+    }
+
+    async fn get_number_of_bots_by_user(&self, _user_id: &str) -> Result<usize> {
+        Ok(1)
+    }
 }

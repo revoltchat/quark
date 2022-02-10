@@ -6,7 +6,7 @@ pub fn if_false(t: &bool) -> bool {
 }
 
 /// Representation of a bot on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_name = "PartialBot"]
 #[optional_derive(Serialize, Deserialize, Debug, Default)]
 pub struct Bot {
@@ -33,7 +33,7 @@ pub struct Bot {
 }
 
 /// Optional fields on bot object
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum FieldsBot {
     Token,
     InteractionsURL,
