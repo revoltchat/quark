@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 use crate::models::attachment::File;
 
@@ -27,18 +28,24 @@ pub struct Role {
     pub rank: i64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct Category {
+    #[validate(length(min = 1, max = 32))]
     pub id: String,
+    #[validate(length(min = 1, max = 32))]
     pub title: String,
     pub channels: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SystemMessageChannels {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_joined: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_left: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_kicked: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_banned: Option<String>,
 }
 
@@ -57,7 +64,7 @@ pub enum RemoveMember {
 }
 
 /// Representation of a server on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default)]
 #[optional_name = "PartialServer"]
 pub struct Server {
@@ -112,12 +119,11 @@ pub struct Server {
 }
 
 /// Optional fields on server object
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum FieldsServer {
     Description,
     Categories,
     SystemMessages,
     Icon,
     Banner,
-    Flags,
 }

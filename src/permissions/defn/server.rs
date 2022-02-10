@@ -21,7 +21,7 @@ impl_op_ex!(+ |a: &ServerPermission, b: &ServerPermission| -> u32 { *a as u32 | 
 impl_op_ex_commutative!(+ |a: &u32, b: &ServerPermission| -> u32 { *a | *b as u32 });
 
 lazy_static! {
-    pub static ref DEFAULT_PERMISSION: u32 =
+    pub static ref DEFAULT_SERVER_PERMISSION: u32 =
         ServerPermission::View + ServerPermission::ChangeNickname + ServerPermission::ChangeAvatar;
 }
 

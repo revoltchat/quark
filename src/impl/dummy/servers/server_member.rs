@@ -44,4 +44,8 @@ impl AbstractServerMember for DummyDB {
     async fn fetch_member_count(&self, _server: &str) -> Result<usize> {
         Ok(100)
     }
+
+    async fn fetch_server_count(&self, user: &str) -> Result<usize> {
+        Ok(5)
+    }
 }

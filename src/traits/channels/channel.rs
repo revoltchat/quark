@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
 use crate::Result;
 
@@ -46,4 +48,7 @@ pub trait AbstractChannel: Sync + Send {
         role: &str,
         permissions: u32,
     ) -> Result<()>;
+
+    /// Validate existence of channels
+    async fn check_channels_exist(&self, channels: &HashSet<String>) -> Result<bool>;
 }

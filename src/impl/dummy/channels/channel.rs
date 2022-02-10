@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
 use crate::{AbstractAttachment, AbstractChannel, Error, Result};
 
@@ -72,5 +74,9 @@ impl AbstractChannel for DummyDB {
     ) -> Result<()> {
         info!("Updating permissions for role {role} in {channel} with {permissions}");
         Ok(())
+    }
+
+    async fn check_channels_exist(&self, channels: &HashSet<String>) -> Result<bool> {
+        Ok(true)
     }
 }

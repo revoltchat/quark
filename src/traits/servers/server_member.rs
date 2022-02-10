@@ -25,4 +25,7 @@ pub trait AbstractServerMember: Sync + Send {
 
     /// Fetch member count of a server
     async fn fetch_member_count(&self, server: &str) -> Result<usize>;
+
+    /// Fetch server count of a user
+    async fn fetch_server_count(&self, user: &str) -> Result<usize>;
 }

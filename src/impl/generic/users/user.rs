@@ -104,24 +104,26 @@ impl User {
     }
 
     /*/// Utility function to get all of a user's memberships
-    pub async fn fetch_memberships(&self, _db: &Database) -> Result<Vec<String>> {
-        todo!();
-    }
+        pub async fn fetch_memberships(&self, _db: &Database) -> Result<Vec<String>> {
+            todo!();
+        }
 
-    /// Utility function to get all the server IDs the user is in
-    pub async fn fetch_server_ids(&self, _db: &Database) -> Result<Vec<String>> {
-        todo!();
-    }
+        /// Utility function to get all the server IDs the user is in
+        pub async fn fetch_server_ids(&self, _db: &Database) -> Result<Vec<String>> {
+            todo!();
+        }
 
-    /// Utility function to fetch unread objects for user
-    pub async fn fetch_unreads(&self, _db: &Database, _id: &str) -> Result<Vec<String>> {
-        todo!();
-    }
+        /// Utility function to fetch unread objects for user
+        pub async fn fetch_unreads(&self, _db: &Database, _id: &str) -> Result<Vec<String>> {
+            todo!();
+        }
+    */
 
     /// Check if this user can acquire another server
-    pub async fn can_acquire_server(&self, _db: &Database, _id: &str) -> Result<bool> {
-        todo!()
-    }*/
+    pub async fn can_acquire_server(&self, db: &Database) -> Result<bool> {
+        // ! FIXME: hardcoded max server count
+        Ok(db.fetch_server_count(&self.id).await? <= 100)
+    }
 
     /// Update a user's username
     pub async fn update_username(&mut self, db: &Database, username: String) -> Result<()> {
