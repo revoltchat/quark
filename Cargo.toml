@@ -15,6 +15,7 @@ default = [ "test" ]
 optional_struct = { git = "https://github.com/insertish/OptionalStruct", rev = "2011de17db6ecb210fddabe3d79ade865efaf4ee" }
 serde = { version = "1", features = ["derive"] }
 validator = { version = "0.14", features = ["derive"] }
+bson = { version = "2.1.0", features = ["chrono-0_4"] }
 
 # Databases
 mongodb = { version = "2.1.0", default-features = false }

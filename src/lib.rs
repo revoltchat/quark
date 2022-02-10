@@ -34,3 +34,5 @@ use rocket::State;
 
 #[cfg(feature = "rocket_impl")]
 pub type Db = State<Database>;
+
+pub use bson;

@@ -1,4 +1,4 @@
-use mongodb::bson::DateTime;
+use bson::DateTime;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
