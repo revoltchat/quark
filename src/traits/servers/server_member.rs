@@ -22,4 +22,7 @@ pub trait AbstractServerMember: Sync + Send {
 
     /// Fetch multiple members by their ids
     async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>>;
+
+    /// Fetch member count of a server
+    async fn fetch_member_count(&self, server: &str) -> Result<usize>;
 }

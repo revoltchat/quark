@@ -1,7 +1,7 @@
 use rocket::request::FromParam;
 use serde::{Deserialize, Serialize};
 
-use crate::models::{Bot, Channel, Message, Server, User};
+use crate::models::{Bot, Channel, Invite, Message, Server, User};
 use crate::{Database, Result};
 
 #[derive(Serialize, Deserialize)]
@@ -32,6 +32,10 @@ impl Ref {
 
     pub async fn as_bot(&self, db: &Database) -> Result<Bot> {
         db.fetch_bot(&self.id).await
+    }
+
+    pub async fn as_invite(&self, db: &Database) -> Result<Invite> {
+        db.fetch_invite(&self.id).await
     }
 }
 

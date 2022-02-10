@@ -6,9 +6,9 @@ use super::super::DummyDB;
 #[async_trait]
 impl AbstractUserSettings for DummyDB {
     async fn fetch_user_settings(
-        &self,
+        &'_ self,
         _id: &str,
-        _filter: &'static [&'static str],
+        _filter: &'_ [String],
     ) -> Result<UserSettings> {
         Ok(std::collections::HashMap::new())
     }

@@ -14,6 +14,18 @@ lazy_static! {
 }
 
 impl Invite {
+    pub fn code(&'_ self) -> &'_ str {
+        match self {
+            Invite::Server { code, .. } | Invite::Group { code, .. } => code,
+        }
+    }
+
+    pub fn creator(&'_ self) -> &'_ str {
+        match self {
+            Invite::Server { creator, .. } | Invite::Group { creator, .. } => creator,
+        }
+    }
+
     pub async fn create(db: &Database, creator: &User, target: &Channel) -> Result<Invite> {
         let code = nanoid!(8, &*ALPHABET);
         let invite = match &target {
