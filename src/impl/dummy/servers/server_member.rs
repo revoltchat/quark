@@ -36,4 +36,8 @@ impl AbstractServerMember for DummyDB {
         info!("Delete {user} in {server}");
         Ok(())
     }
+
+    async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>> {
+        Ok(vec![self.fetch_member(server, "member").await.unwrap()])
+    }
 }

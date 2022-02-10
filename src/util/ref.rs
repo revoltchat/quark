@@ -1,7 +1,7 @@
 use rocket::request::FromParam;
 use serde::{Deserialize, Serialize};
 
-use crate::models::{Channel, Server, User, Message};
+use crate::models::{Channel, Message, Server, User};
 use crate::{Database, Result};
 
 #[derive(Serialize, Deserialize)]

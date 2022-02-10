@@ -1,4 +1,4 @@
-use crate::models::message::{Content, FieldsMessage, Message, PartialMessage};
+use crate::models::message::{Content, FieldsMessage, Message, MessageSort, PartialMessage};
 use crate::{AbstractMessage, Result};
 
 use super::super::DummyDB;
@@ -40,5 +40,29 @@ impl AbstractMessage for DummyDB {
     async fn delete_message(&self, id: &str) -> Result<()> {
         info!("Delete {id}");
         Ok(())
+    }
+
+    async fn fetch_messages(
+        &self,
+        channel: &str,
+        _limit: Option<i64>,
+        _before: Option<String>,
+        _after: Option<String>,
+        _sort: Option<MessageSort>,
+        _nearby: Option<String>,
+    ) -> Result<Vec<Message>> {
+        Ok(vec![self.fetch_message(channel).await.unwrap()])
+    }
+
+    async fn search_messages(
+        &self,
+        channel: &str,
+        _query: &str,
+        _limit: Option<i64>,
+        _before: Option<String>,
+        _after: Option<String>,
+        _sort: MessageSort,
+    ) -> Result<Vec<Message>> {
+        Ok(vec![self.fetch_message(channel).await.unwrap()])
     }
 }

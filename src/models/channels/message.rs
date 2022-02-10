@@ -2,7 +2,13 @@ use mongodb::bson::DateTime;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::{models::attachment::File, types::january::Embed};
+#[cfg(feature = "rocket_impl")]
+use rocket::FromFormField;
+
+use crate::{
+    models::{attachment::File, Member, User},
+    types::january::Embed,
+};
 
 /// Representation of a message reply before it is sent.
 #[derive(Serialize, Deserialize)]
@@ -118,4 +124,32 @@ pub struct Message {
 pub enum FieldsMessage {
     Description,
     Icon,
+}
+
+/// Sort used for retrieving messages.
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "rocket_impl", derive(FromFormField))]
+pub enum MessageSort {
+    Relevance,
+    Latest,
+    Oldest,
+}
+
+impl Default for MessageSort {
+    fn default() -> MessageSort {
+        MessageSort::Relevance
+    }
+}
+
+/// Response used when multiple messages are fetched.
+#[derive(Serialize)]
+#[serde(untagged)]
+pub enum BulkMessageResponse {
+    JustMessages(Vec<Message>),
+    MessagesAndUsers {
+        messages: Vec<Message>,
+        users: Vec<User>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        members: Option<Vec<Member>>,
+    },
 }

@@ -17,7 +17,7 @@ impl AbstractUserSettings for DummyDB {
         info!("Set {id} to {settings:?}");
         Ok(())
     }
-    
+
     async fn delete_user_settings(&self, id: &str) -> Result<()> {
         info!("Delete {id}");
         Ok(())
