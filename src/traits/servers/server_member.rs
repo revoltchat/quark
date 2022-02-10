@@ -1,4 +1,4 @@
-use crate::models::server_member::{FieldsMember, Member, PartialMember};
+use crate::models::server_member::{FieldsMember, Member, MemberCompositeKey, PartialMember};
 use crate::Result;
 
 #[async_trait]
@@ -12,13 +12,16 @@ pub trait AbstractServerMember: Sync + Send {
     /// Update information for a server member
     async fn update_member(
         &self,
-        id: &str,
+        id: &MemberCompositeKey,
         member: &PartialMember,
         remove: Vec<FieldsMember>,
     ) -> Result<()>;
 
     /// Delete a server member by their id
-    async fn delete_member(&self, server: &str, user: &str) -> Result<()>;
+    async fn delete_member(&self, id: &MemberCompositeKey) -> Result<()>;
+
+    /// Fetch all members in a server
+    async fn fetch_all_members<'a>(&self, server: &str) -> Result<Vec<Member>>;
 
     /// Fetch multiple members by their ids
     async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>>;

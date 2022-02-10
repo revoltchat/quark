@@ -1,7 +1,15 @@
 use crate::models::{
-    server::{FieldsServer, SystemMessageChannels},
+    server::{FieldsRole, FieldsServer, Role, SystemMessageChannels},
     Server,
 };
+
+impl Role {
+    pub fn remove(&mut self, field: &FieldsRole) {
+        match field {
+            FieldsRole::Colour => self.colour = None,
+        }
+    }
+}
 
 impl Server {
     pub fn remove(&mut self, field: &FieldsServer) {

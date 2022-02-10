@@ -16,7 +16,9 @@ pub fn if_false(t: &bool) -> bool {
     !t
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
+#[optional_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[optional_name = "PartialRole"]
 pub struct Role {
     pub name: String,
     pub permissions: PermissionTuple,
@@ -126,4 +128,10 @@ pub enum FieldsServer {
     SystemMessages,
     Icon,
     Banner,
+}
+
+/// Optional fields on server object
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub enum FieldsRole {
+    Colour,
 }

@@ -10,6 +10,11 @@ impl AbstractChannelUnread for DummyDB {
         Ok(())
     }
 
+    async fn acknowledge_channels(&self, user: &str, channels: &[String]) -> Result<()> {
+        info!("Acknowledged {channels:?} for {user}");
+        Ok(())
+    }
+
     async fn add_mention_to_unread<'a>(
         &self,
         channel: &str,

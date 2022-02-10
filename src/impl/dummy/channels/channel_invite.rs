@@ -23,4 +23,8 @@ impl AbstractChannelInvite for DummyDB {
         info!("Delete {code}");
         Ok(())
     }
+
+    async fn fetch_invites_for_server(&self, server: &str) -> Result<Vec<Invite>> {
+        Ok(vec![self.fetch_invite(server).await.unwrap()])
+    }
 }

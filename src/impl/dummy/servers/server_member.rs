@@ -24,17 +24,21 @@ impl AbstractServerMember for DummyDB {
 
     async fn update_member(
         &self,
-        id: &str,
+        id: &MemberCompositeKey,
         member: &PartialMember,
         remove: Vec<FieldsMember>,
     ) -> Result<()> {
-        info!("Update {id} with {member:?} and remove {remove:?}");
+        info!("Update {id:?} with {member:?} and remove {remove:?}");
         Ok(())
     }
 
-    async fn delete_member(&self, server: &str, user: &str) -> Result<()> {
-        info!("Delete {user} in {server}");
+    async fn delete_member(&self, id: &MemberCompositeKey) -> Result<()> {
+        info!("Delete {id:?}");
         Ok(())
+    }
+
+    async fn fetch_all_members<'a>(&self, server: &str) -> Result<Vec<Member>> {
+        Ok(vec![self.fetch_member(server, "member").await.unwrap()])
     }
 
     async fn fetch_members<'a>(&self, server: &str, _ids: &'a [String]) -> Result<Vec<Member>> {
@@ -45,7 +49,7 @@ impl AbstractServerMember for DummyDB {
         Ok(100)
     }
 
-    async fn fetch_server_count(&self, user: &str) -> Result<usize> {
+    async fn fetch_server_count(&self, _user: &str) -> Result<usize> {
         Ok(5)
     }
 }

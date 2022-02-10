@@ -20,13 +20,13 @@ impl AbstractServerBan for DummyDB {
         Ok(vec![self.fetch_ban(server, "user").await.unwrap()])
     }
 
-    async fn insert_ban(&self, server: &str, user: &str) -> Result<()> {
-        info!("Insert {user} in {server}");
+    async fn insert_ban(&self, ban: &ServerBan) -> Result<()> {
+        info!("Insert {ban:?}");
         Ok(())
     }
 
-    async fn delete_ban(&self, server: &str, user: &str) -> Result<()> {
-        info!("Delete {user} in {server}");
+    async fn delete_ban(&self, id: &MemberCompositeKey) -> Result<()> {
+        info!("Delete {id:?}");
         Ok(())
     }
 }

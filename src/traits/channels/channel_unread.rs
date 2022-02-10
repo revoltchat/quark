@@ -6,6 +6,9 @@ pub trait AbstractChannelUnread: Sync + Send {
     /// Acknowledge a message.
     async fn acknowledge_message(&self, channel: &str, user: &str, message: &str) -> Result<()>;
 
+    /// Acknowledge many channels.
+    async fn acknowledge_channels(&self, user: &str, channels: &[String]) -> Result<()>;
+
     /// Add a mention.
     async fn add_mention_to_unread<'a>(
         &self,
