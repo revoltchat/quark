@@ -111,7 +111,7 @@ impl BulkMessageResponse {
                     BulkMessageResponse::MessagesAndUsers {
                         messages,
                         users,
-                        members: Some(db.fetch_members(&server, &user_ids).await?),
+                        members: Some(db.fetch_members(server, &user_ids).await?),
                     }
                 }
                 _ => BulkMessageResponse::MessagesAndUsers {

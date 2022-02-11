@@ -9,8 +9,11 @@ pub struct PermissionCalculator<'a> {
     perspective: &'a User,
 
     user: Option<&'a User>,
+    #[allow(dead_code)]
     channel: Option<&'a Channel>,
+    #[allow(dead_code)]
     server: Option<&'a Server>,
+    #[allow(dead_code)]
     member: Option<&'a Member>,
 
     flag_known_relationship: Option<&'a RelationshipStatus>,

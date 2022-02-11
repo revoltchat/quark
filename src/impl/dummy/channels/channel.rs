@@ -76,7 +76,7 @@ impl AbstractChannel for DummyDB {
         Ok(())
     }
 
-    async fn check_channels_exist(&self, channels: &HashSet<String>) -> Result<bool> {
+    async fn check_channels_exist(&self, _channels: &HashSet<String>) -> Result<bool> {
         Ok(true)
     }
 }
