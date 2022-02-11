@@ -7,7 +7,7 @@ pub trait AbstractServerMember: Sync + Send {
     async fn fetch_member(&self, server: &str, user: &str) -> Result<Member>;
 
     /// Insert a new server member into the database
-    async fn insert_member(&self, server: &str, user: &str) -> Result<()>;
+    async fn insert_member(&self, member: &Member) -> Result<()>;
 
     /// Update information for a server member
     async fn update_member(

@@ -1,26 +1,28 @@
+use bson::Document;
+
 use crate::models::server_member::{FieldsMember, Member, MemberCompositeKey, PartialMember};
 use crate::r#impl::mongo::IntoDocumentPath;
-use crate::{AbstractServerMember, Result};
+use crate::{AbstractServerMember, Error, Result};
 
 use super::super::MongoDb;
+
+static COL: &str = "server_members";
 
 #[async_trait]
 impl AbstractServerMember for MongoDb {
     async fn fetch_member(&self, server: &str, user: &str) -> Result<Member> {
-        Ok(Member {
-            id: MemberCompositeKey {
-                server: server.into(),
-                user: user.into(),
+        self.find_one(
+            COL,
+            doc! {
+                "_id.server": server,
+                "_id.user": user
             },
-            nickname: None,
-            avatar: None,
-            roles: None,
-        })
+        )
+        .await
     }
 
-    async fn insert_member(&self, server: &str, user: &str) -> Result<()> {
-        info!("Create {user} in {server}");
-        Ok(())
+    async fn insert_member(&self, member: &Member) -> Result<()> {
+        self.insert_one(COL, member).await.map(|_| ())
     }
 
     async fn update_member(
@@ -29,29 +31,85 @@ impl AbstractServerMember for MongoDb {
         member: &PartialMember,
         remove: Vec<FieldsMember>,
     ) -> Result<()> {
-        info!("Update {id:?} with {member:?} and remove {remove:?}");
-        Ok(())
+        self.update_one(
+            COL,
+            doc! {
+                "_id.server": &id.server,
+                "_id.user": &id.user
+            },
+            member,
+            remove.iter().map(|x| x as &dyn IntoDocumentPath).collect(),
+            None,
+        )
+        .await
+        .map(|_| ())
     }
 
     async fn delete_member(&self, id: &MemberCompositeKey) -> Result<()> {
-        info!("Delete {id:?}");
-        Ok(())
+        self.delete_one(
+            COL,
+            doc! {
+                "_id.server": &id.server,
+                "_id.user": &id.user
+            },
+        )
+        .await
+        .map(|_| ())
     }
 
     async fn fetch_all_members<'a>(&self, server: &str) -> Result<Vec<Member>> {
-        Ok(vec![self.fetch_member(server, "member").await.unwrap()])
+        self.find(
+            COL,
+            doc! {
+                "_id.server": server
+            },
+        )
+        .await
     }
 
-    async fn fetch_members<'a>(&self, server: &str, _ids: &'a [String]) -> Result<Vec<Member>> {
-        Ok(vec![self.fetch_member(server, "member").await.unwrap()])
+    async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>> {
+        self.find(
+            COL,
+            doc! {
+                "_id.server": server,
+                "_id.user": {
+                    "$in": ids
+                }
+            },
+        )
+        .await
     }
 
-    async fn fetch_member_count(&self, _server: &str) -> Result<usize> {
-        Ok(100)
+    async fn fetch_member_count(&self, server: &str) -> Result<usize> {
+        self.col::<Document>(COL)
+            .count_documents(
+                doc! {
+                    "_id.server": server
+                },
+                None,
+            )
+            .await
+            .map(|c| c as usize)
+            .map_err(|_| Error::DatabaseError {
+                operation: "count_documents",
+                with: "server_members",
+            })
     }
 
-    async fn fetch_server_count(&self, _user: &str) -> Result<usize> {
-        Ok(5)
+    async fn fetch_server_count(&self, user: &str) -> Result<usize> {
+        self.col::<Document>(COL)
+            .count_documents(
+                doc! {
+                    "_id.user": user
+                },
+                None,
+            )
+            .await
+            .map(|c| c as usize)
+            .map_err(|_| Error::DatabaseError {
+                operation: "count_documents",
+                with: "server_members",
+            })
     }
 }
 

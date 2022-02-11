@@ -149,10 +149,10 @@ impl MongoDb {
         .await
     }
 
-    async fn update_one_by_id<P, T: Serialize>(
+    async fn update_one<P, T: Serialize>(
         &self,
         collection: &'static str,
-        id: &str,
+        projection: Document,
         partial: T,
         remove: Vec<&dyn IntoDocumentPath>,
         prefix: P,
@@ -182,18 +182,35 @@ impl MongoDb {
         };
 
         self.col::<Document>(collection)
-            .update_one(
-                doc! {
-                    "_id": id
-                },
-                query,
-                None,
-            )
+            .update_one(projection, query, None)
             .await
             .map_err(|_| Error::DatabaseError {
                 operation: "update_one",
                 with: collection,
             })
+    }
+
+    async fn update_one_by_id<P, T: Serialize>(
+        &self,
+        collection: &'static str,
+        id: &str,
+        partial: T,
+        remove: Vec<&dyn IntoDocumentPath>,
+        prefix: P,
+    ) -> Result<UpdateResult>
+    where
+        P: Into<Option<String>>,
+    {
+        self.update_one(
+            collection,
+            doc! {
+                "_id": id
+            },
+            partial,
+            remove,
+            prefix,
+        )
+        .await
     }
 
     async fn delete_one(

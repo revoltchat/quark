@@ -17,8 +17,8 @@ impl AbstractServerMember for DummyDb {
         })
     }
 
-    async fn insert_member(&self, server: &str, user: &str) -> Result<()> {
-        info!("Create {user} in {server}");
+    async fn insert_member(&self, member: &Member) -> Result<()> {
+        info!("Create {member:?}");
         Ok(())
     }
 
