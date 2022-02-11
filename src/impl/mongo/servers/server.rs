@@ -1,10 +1,10 @@
-use bson::Document;
+use bson::{to_document, Document};
 
 use crate::models::server::{
     FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
 };
 use crate::r#impl::mongo::IntoDocumentPath;
-use crate::{AbstractServer, Error, Result};
+use crate::{AbstractServer, Database, Error, Result};
 
 use super::super::MongoDb;
 
@@ -42,8 +42,28 @@ impl AbstractServer for MongoDb {
     }
 
     async fn insert_role(&self, server_id: &str, role_id: &str, role: &Role) -> Result<()> {
-        info!("Create {role:?} on {server_id} as {role_id}");
-        Ok(())
+        self.col::<Database>(COL)
+            .update_one(
+                doc! {
+                    "_id": server_id
+                },
+                doc! {
+                    "$set": {
+                        "roles.".to_owned() + role_id: to_document(role)
+                            .map_err(|_| Error::DatabaseError {
+                                operation: "to_document",
+                                with: "role"
+                            })?
+                    }
+                },
+                None,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "server",
+            })
     }
 
     async fn update_role(
