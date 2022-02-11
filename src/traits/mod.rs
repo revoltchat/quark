@@ -1,6 +1,5 @@
 mod admin {
     pub mod migrations;
-    pub mod simple;
 }
 
 mod autumn {
@@ -27,7 +26,6 @@ mod users {
 }
 
 pub use admin::migrations::AbstractMigrations;
-pub use admin::simple::AbstractSimpleModel;
 
 pub use autumn::attachment::AbstractAttachment;
 
@@ -51,7 +49,6 @@ pub trait AbstractDatabase:
     Sync
     + Send
     + AbstractMigrations
-    + AbstractSimpleModel
     + AbstractAttachment
     + AbstractChannel
     + AbstractChannelInvite

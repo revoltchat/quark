@@ -7,6 +7,7 @@ use crate::AbstractDatabase;
 pub enum DatabaseInfo<'a> {
     Dummy,
     MongoDb(&'a str),
+    MongoDbFromClient(mongodb::Client),
 }
 
 #[derive(Debug)]
@@ -26,6 +27,7 @@ impl DatabaseInfo<'_> {
 
                 Database::MongoDb(MongoDb(client))
             }
+            DatabaseInfo::MongoDbFromClient(client) => Database::MongoDb(MongoDb(client)),
         })
     }
 }

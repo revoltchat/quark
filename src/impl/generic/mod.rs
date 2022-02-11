@@ -2,7 +2,6 @@
 
 pub mod admin {
     pub mod migrations;
-    pub mod simple;
 }
 
 pub mod autumn {
