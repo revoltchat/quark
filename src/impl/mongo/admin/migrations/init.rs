@@ -78,13 +78,13 @@ pub async fn create_database(db: &MongoDb) {
             "indexes": [
                 {
                     "key": {
-                        "username": 1 as i32
+                        "username": 1_i32
                     },
                     "name": "username",
                     "unique": true,
                     "collation": {
                         "locale": "en",
-                        "strength": 2 as i32
+                        "strength": 2_i32
                     }
                 }
             ]
@@ -106,14 +106,14 @@ pub async fn create_database(db: &MongoDb) {
                 },
                 {
                     "key": {
-                        "channel": 1 as i32
+                        "channel": 1_i32
                     },
                     "name": "channel"
                 },
                 {
                     "key": {
-                        "channel": 1 as i32,
-                        "_id": 1 as i32
+                        "channel": 1_i32,
+                        "_id": 1_i32
                     },
                     "name": "channel_id_compound"
                 }
@@ -130,14 +130,14 @@ pub async fn create_database(db: &MongoDb) {
             "indexes": [
                 {
                     "key": {
-                        "_id.channel": 1 as i32,
-                        "_id.user": 1 as i32,
+                        "_id.channel": 1_i32,
+                        "_id.user": 1_i32,
                     },
                     "name": "compound_id"
                 },
                 {
                     "key": {
-                        "_id.user": 1 as i32,
+                        "_id.user": 1_i32,
                     },
                     "name": "user_id"
                 }
@@ -154,14 +154,14 @@ pub async fn create_database(db: &MongoDb) {
             "indexes": [
                 {
                     "key": {
-                        "_id.server": 1 as i32,
-                        "_id.user": 1 as i32,
+                        "_id.server": 1_i32,
+                        "_id.user": 1_i32,
                     },
                     "name": "compound_id"
                 },
                 {
                     "key": {
-                        "_id.user": 1 as i32,
+                        "_id.user": 1_i32,
                     },
                     "name": "user_id"
                 }
@@ -175,7 +175,7 @@ pub async fn create_database(db: &MongoDb) {
     db.collection("migrations")
         .insert_one(
             doc! {
-                "_id": 0 as i32,
+                "_id": 0_i32,
                 "revision": LATEST_REVISION
             },
             None,

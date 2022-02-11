@@ -68,8 +68,8 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
 
         messages
             .update_many(
-                doc! { "attachment": { "$exists": 1 as i32 } },
-                doc! { "$set": { "attachment.tag": "attachments", "attachment.size": 0 as i32 } },
+                doc! { "attachment": { "$exists": 1_i32 } },
+                doc! { "$set": { "attachment.tag": "attachments", "attachment.size": 0_i32 } },
                 None,
             )
             .await
@@ -78,7 +78,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
         attachments
             .update_many(
                 doc! {},
-                doc! { "$set": { "tag": "attachments", "size": 0 as i32 } },
+                doc! { "$set": { "tag": "attachments", "size": 0_i32 } },
                 None,
             )
             .await
@@ -102,12 +102,12 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             .find(
                 doc! {
                     "attachment": {
-                        "$exists": 1 as i32
+                        "$exists": 1_i32
                     }
                 },
                 FindOptions::builder()
                     .projection(doc! {
-                        "_id": 1 as i32,
+                        "_id": 1_i32,
                         "attachments": [ "$attachment" ]
                     })
                     .build(),
@@ -123,7 +123,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             messages
                 .update_one(
                     doc! { "_id": id },
-                    doc! { "$unset": { "attachment": 1 as i32 }, "$set": { "attachments": attachments } },
+                    doc! { "$unset": { "attachment": 1_i32 }, "$set": { "attachments": attachments } },
                     None,
                 )
                 .await
@@ -254,7 +254,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                         let mut doc = doc! {
                             "_id": session.id,
                             "token": session.token,
-                            "user_id": id.clone(),
+                            "user_id": id,
                             "name": session.friendly_name,
                         };
 
@@ -275,7 +275,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                 doc! {},
                 doc! {
                     "$unset": {
-                        "sessions": 1 as i32,
+                        "sessions": 1_i32,
                     },
                     "$set": {
                         "mfa": {
@@ -328,7 +328,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                                     "last_message_id": id
                                 },
                                 "$unset": {
-                                    "last_message": 1 as i32,
+                                    "last_message": 1_i32,
                                 }
                             },
                             None,
@@ -350,7 +350,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                 doc! {},
                 doc! {
                     "$unset": {
-                        "nonce": 1 as i32,
+                        "nonce": 1_i32,
                     }
                 },
                 None,
@@ -363,7 +363,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                 doc! {},
                 doc! {
                     "$unset": {
-                        "nonce": 1 as i32,
+                        "nonce": 1_i32,
                     }
                 },
                 None,
@@ -382,7 +382,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                     "indexes": [
                         {
                             "key": {
-                                "channel": 1 as i32
+                                "channel": 1_i32
                             },
                             "name": "channel"
                         }
@@ -400,14 +400,14 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                     "indexes": [
                         {
                             "key": {
-                                "_id.channel": 1 as i32,
-                                "_id.user": 1 as i32,
+                                "_id.channel": 1_i32,
+                                "_id.user": 1_i32,
                             },
                             "name": "compound_id"
                         },
                         {
                             "key": {
-                                "_id.user": 1 as i32,
+                                "_id.user": 1_i32,
                             },
                             "name": "user_id"
                         }
@@ -425,14 +425,14 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                     "indexes": [
                         {
                             "key": {
-                                "_id.server": 1 as i32,
-                                "_id.user": 1 as i32,
+                                "_id.server": 1_i32,
+                                "_id.user": 1_i32,
                             },
                             "name": "compound_id"
                         },
                         {
                             "key": {
-                                "_id.user": 1 as i32,
+                                "_id.user": 1_i32,
                             },
                             "name": "user_id"
                         }
@@ -454,8 +454,8 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                     "indexes": [
                         {
                             "key": {
-                                "channel": 1 as i32,
-                                "_id": 1 as i32
+                                "channel": 1_i32,
+                                "_id": 1_i32
                             },
                             "name": "channel_id_compound"
                         }

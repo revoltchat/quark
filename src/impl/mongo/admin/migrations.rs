@@ -15,10 +15,10 @@ impl AbstractMigrations for MongoDb {
             .await
             .expect("Failed to fetch database names.");
 
-        if list.iter().position(|x| x == "revolt").is_none() {
-            init::create_database(self).await;
-        } else {
+        if list.iter().any(|x| x == "revolt") {
             scripts::migrate_database(self).await;
+        } else {
+            init::create_database(self).await;
         }
 
         Ok(())
