@@ -1,4 +1,4 @@
-use crate::models::message::{Content, FieldsMessage, Message, MessageSort, PartialMessage};
+use crate::models::message::{Content, Message, MessageSort, PartialMessage};
 use crate::{AbstractMessage, Result};
 
 use super::super::DummyDb;
@@ -27,13 +27,8 @@ impl AbstractMessage for DummyDb {
         Ok(())
     }
 
-    async fn update_message(
-        &self,
-        id: &str,
-        message: &PartialMessage,
-        remove: Vec<FieldsMessage>,
-    ) -> Result<()> {
-        info!("Update {id} with {message:?} and remove {remove:?}");
+    async fn update_message(&self, id: &str, message: &PartialMessage) -> Result<()> {
+        info!("Update {id} with {message:?}");
         Ok(())
     }
 

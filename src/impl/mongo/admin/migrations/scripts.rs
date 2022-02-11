@@ -20,7 +20,7 @@ struct MigrationInfo {
 pub const LATEST_REVISION: i32 = 13;
 
 pub async fn migrate_database(db: &MongoDb) {
-    let migrations = db.col("migrations");
+    let migrations = db.col::<Document>("migrations");
     let data = migrations
         .find_one(None, None)
         .await
@@ -63,8 +63,8 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
     if revision <= 1 {
         info!("Running migration [revision 1 / 2021-04-24]: Migrate to Autumn v1.0.0.");
 
-        let messages = db.col("messages");
-        let attachments = db.col("attachments");
+        let messages = db.col::<Document>("messages");
+        let attachments = db.col::<Document>("attachments");
 
         messages
             .update_many(
@@ -97,7 +97,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
     if revision <= 3 {
         info!("Running migration [revision 3 / 2021-05-25]: Support multiple file uploads, add channel_unreads and user_settings.");
 
-        let messages = db.col("messages");
+        let messages = db.col::<Document>("messages");
         let mut cursor = messages
             .find(
                 doc! {
@@ -175,7 +175,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             ),
         };
 
-        db.col("servers")
+        db.col::<Document>("servers")
             .update_many(
                 doc! {},
                 doc! {
@@ -232,8 +232,12 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             .await
             .expect("Failed to delete legacy account indexes.");
 
-        let col = db.col("sessions");
-        let mut cursor = db.col("accounts").find(doc! {}, None).await.unwrap();
+        let col = db.col::<Document>("sessions");
+        let mut cursor = db
+            .col::<Document>("accounts")
+            .find(doc! {}, None)
+            .await
+            .unwrap();
 
         while let Some(doc) = cursor.next().await {
             if let Ok(account) = doc {
@@ -270,7 +274,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             }
         }
 
-        db.col("accounts")
+        db.col::<Document>("accounts")
             .update_many(
                 doc! {},
                 doc! {
@@ -292,7 +296,11 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
     if revision <= 9 {
         info!("Running migration [revision 9 / 2021-09-14]: Switch from last_message to last_message_id.");
 
-        let mut cursor = db.col("channels").find(doc! {}, None).await.unwrap();
+        let mut cursor = db
+            .col::<Document>("channels")
+            .find(doc! {}, None)
+            .await
+            .unwrap();
 
         while let Some(doc) = cursor.next().await {
             if let Ok(channel) = doc {
@@ -318,7 +326,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                     };
 
                     info!("Converting session {} to new format.", &channel_id);
-                    db.col("channels")
+                    db.col::<Document>("channels")
                         .update_one(
                             doc! {
                                 "_id": channel_id
@@ -345,7 +353,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
     if revision <= 10 {
         info!("Running migration [revision 10 / 2021-11-01]: Remove nonce values on channels and servers.");
 
-        db.col("servers")
+        db.col::<Document>("servers")
             .update_many(
                 doc! {},
                 doc! {
@@ -358,7 +366,7 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             .await
             .unwrap();
 
-        db.col("channels")
+        db.col::<Document>("channels")
             .update_many(
                 doc! {},
                 doc! {

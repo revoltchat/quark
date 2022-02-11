@@ -119,13 +119,6 @@ pub struct Message {
     pub masquerade: Option<Masquerade>,
 }
 
-/// Optional fields on channel object
-#[derive(Serialize, Deserialize, Debug)]
-pub enum FieldsMessage {
-    Description,
-    Icon,
-}
-
 /// Sort used for retrieving messages.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "rocket_impl", derive(FromFormField))]

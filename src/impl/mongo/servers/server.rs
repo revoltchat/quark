@@ -1,41 +1,23 @@
+use bson::Document;
+
 use crate::models::server::{
     FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
 };
-use crate::{AbstractServer, Result};
+use crate::r#impl::mongo::IntoDocumentPath;
+use crate::{AbstractServer, Error, Result};
 
 use super::super::MongoDb;
+
+static COL: &str = "servers";
 
 #[async_trait]
 impl AbstractServer for MongoDb {
     async fn fetch_server(&self, id: &str) -> Result<Server> {
-        Ok(Server {
-            id: id.into(),
-            owner: "owner".into(),
-
-            name: "server".into(),
-            description: Some("server description".into()),
-
-            channels: vec!["channel".into()],
-            categories: None,
-            system_messages: None,
-
-            roles: std::collections::HashMap::new(),
-            default_permissions: (u16::MAX as i32, u16::MAX as i32),
-
-            icon: None,
-            banner: None,
-
-            flags: None,
-
-            nsfw: false,
-            analytics: true,
-            discoverable: true,
-        })
+        self.find_one_by_id(COL, id).await
     }
 
     async fn insert_server(&self, server: &Server) -> Result<()> {
-        info!("Insert {server:?}");
-        Ok(())
+        self.insert_one(COL, server).await.map(|_| ())
     }
 
     async fn update_server(
@@ -44,13 +26,19 @@ impl AbstractServer for MongoDb {
         server: &PartialServer,
         remove: Vec<FieldsServer>,
     ) -> Result<()> {
-        info!("Update {id} with {server:?} and remove {remove:?}");
-        Ok(())
+        self.update_one_by_id(
+            COL,
+            id,
+            server,
+            remove.iter().map(|x| x as &dyn IntoDocumentPath).collect(),
+            None,
+        )
+        .await
+        .map(|_| ())
     }
 
     async fn delete_server(&self, id: &str) -> Result<()> {
-        info!("Delete {id}");
-        Ok(())
+        self.delete_one_by_id(COL, id).await.map(|_| ())
     }
 
     async fn insert_role(&self, server_id: &str, role_id: &str, role: &Role) -> Result<()> {
@@ -65,13 +53,72 @@ impl AbstractServer for MongoDb {
         role: &PartialRole,
         remove: Vec<FieldsRole>,
     ) -> Result<()> {
-        info!("Update {role_id} on {server_id} with {role:?} and remove {remove:?}");
-        Ok(())
+        self.update_one_by_id(
+            COL,
+            server_id,
+            role,
+            remove.iter().map(|x| x as &dyn IntoDocumentPath).collect(),
+            "roles.".to_owned() + role_id + ".",
+        )
+        .await
+        .map(|_| ())
     }
 
     async fn delete_role(&self, server_id: &str, role_id: &str) -> Result<()> {
-        info!("Delete {role_id} on {server_id}");
-        Ok(())
+        self.col::<Document>("server_members")
+            .update_many(
+                doc! {
+                    "_id.server": server_id
+                },
+                doc! {
+                    "$pull": {
+                        "roles": &role_id
+                    }
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_many",
+                with: "server_members",
+            })?;
+
+        self.col::<Document>("channels")
+            .update_one(
+                doc! {
+                    "server": server_id
+                },
+                doc! {
+                    "$unset": {
+                        "role_permissions.".to_owned() + role_id: 1_i32
+                    }
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "channels",
+            })?;
+
+        self.col::<Document>("servers")
+            .update_one(
+                doc! {
+                    "_id": server_id
+                },
+                doc! {
+                    "$unset": {
+                        "roles.".to_owned() + role_id: 1_i32
+                    }
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "servers",
+            })
+            .map(|_| ())
     }
 
     async fn update_role_permission(
@@ -80,7 +127,44 @@ impl AbstractServer for MongoDb {
         role_id: &str,
         permissions: &PermissionTuple,
     ) -> Result<()> {
-        info!("Update permission for {role_id} in {server_id} to {permissions:?}");
-        Ok(())
+        self.col::<Document>(COL)
+            .update_one(
+                doc! { "_id": server_id },
+                doc! {
+                    "$set": {
+                        "roles.".to_owned() + role_id + ".permissions": [
+                            permissions.0 as i32,
+                            permissions.1 as i32
+                        ]
+                    }
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "server",
+            })
+            .map(|_| ())
+    }
+}
+
+impl IntoDocumentPath for FieldsServer {
+    fn as_path(&self) -> Option<&'static str> {
+        Some(match self {
+            FieldsServer::Banner => "banner",
+            FieldsServer::Categories => "categories",
+            FieldsServer::Description => "description",
+            FieldsServer::Icon => "icon",
+            FieldsServer::SystemMessages => "system_messages",
+        })
+    }
+}
+
+impl IntoDocumentPath for FieldsRole {
+    fn as_path(&self) -> Option<&'static str> {
+        Some(match self {
+            FieldsRole::Colour => "colour",
+        })
     }
 }

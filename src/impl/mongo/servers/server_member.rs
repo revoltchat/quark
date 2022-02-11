@@ -1,4 +1,5 @@
 use crate::models::server_member::{FieldsMember, Member, MemberCompositeKey, PartialMember};
+use crate::r#impl::mongo::IntoDocumentPath;
 use crate::{AbstractServerMember, Result};
 
 use super::super::MongoDb;
@@ -51,5 +52,15 @@ impl AbstractServerMember for MongoDb {
 
     async fn fetch_server_count(&self, _user: &str) -> Result<usize> {
         Ok(5)
+    }
+}
+
+impl IntoDocumentPath for FieldsMember {
+    fn as_path(&self) -> Option<&'static str> {
+        Some(match self {
+            FieldsMember::Avatar => "avatar",
+            FieldsMember::Nickname => "nickname",
+            FieldsMember::Roles => "roles",
+        })
     }
 }

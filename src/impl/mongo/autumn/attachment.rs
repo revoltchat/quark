@@ -1,7 +1,11 @@
+use bson::Document;
+
 use crate::models::attachment::File;
-use crate::{AbstractAttachment, Result};
+use crate::{AbstractAttachment, Error, Result};
 
 use super::super::MongoDb;
+
+static COL: &str = "attachments";
 
 #[async_trait]
 impl AbstractAttachment for MongoDb {
@@ -9,34 +13,92 @@ impl AbstractAttachment for MongoDb {
         &self,
         attachment_id: &str,
         tag: &str,
-        _parent_type: &str,
+        parent_type: &str,
         parent_id: &str,
     ) -> Result<File> {
-        Ok(File {
-            id: attachment_id.into(),
-            tag: tag.into(),
-            filename: "file.txt".into(),
-            content_type: "plain/text".into(),
-            size: 100,
+        let key = format!("{}_id", parent_type);
+        match self
+            .find_one::<File>(
+                COL,
+                doc! {
+                    "_id": attachment_id,
+                    "tag": tag,
+                    &key: {
+                        "$exists": true
+                    }
+                },
+            )
+            .await
+        {
+            Ok(file) => {
+                self.col::<Document>(COL)
+                    .update_one(
+                        doc! {
+                            "_id": &file.id
+                        },
+                        doc! {
+                            "$set": {
+                                key: parent_id
+                            }
+                        },
+                        None,
+                    )
+                    .await
+                    .map_err(|_| Error::DatabaseError {
+                        operation: "update_one",
+                        with: "attachment",
+                    })?;
 
-            object_id: Some(parent_id.into()),
-
-            ..Default::default()
-        })
+                Ok(file)
+            }
+            Err(Error::NotFound) => Err(Error::UnknownAttachment),
+            Err(error) => Err(error),
+        }
     }
 
     async fn insert_attachment(&self, attachment: &File) -> Result<()> {
-        info!("Insert {attachment:?}");
-        Ok(())
+        self.insert_one(COL, attachment).await.map(|_| ())
     }
 
     async fn mark_attachment_as_reported(&self, id: &str) -> Result<()> {
-        info!("Marked {id} as reported");
-        Ok(())
+        self.col::<Document>(COL)
+            .update_one(
+                doc! {
+                    "_id": id
+                },
+                doc! {
+                    "$set": {
+                        "reported": true
+                    }
+                },
+                None,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "attachment",
+            })
     }
 
     async fn mark_attachment_as_deleted(&self, id: &str) -> Result<()> {
-        info!("Marked {id} as deleted");
-        Ok(())
+        self.col::<Document>(COL)
+            .update_one(
+                doc! {
+                    "_id": id
+                },
+                doc! {
+                    "$set": {
+                        "deleted": true
+                    }
+                },
+                None,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "attachment",
+            })
     }
 }

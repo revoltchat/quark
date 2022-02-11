@@ -29,13 +29,11 @@ pub trait AbstractUser: Sync + Send {
     /// Check whether a username is already in use by another user
     async fn is_username_taken(&self, username: &str) -> Result<bool>;
 
-    /// Check whether two users have a mutual connection
-    ///
-    /// This will check if user_a and user_b share a server or a group.
-    async fn have_mutual_connection(&self, user_a: &str, user_b: &str) -> Result<bool>;
-
     /// Fetch ids of users that both users are friends with
     async fn fetch_mutual_user_ids(&self, user_a: &str, user_b: &str) -> Result<Vec<String>>;
+
+    /// Fetch ids of channels that both users are in
+    async fn fetch_mutual_channel_ids(&self, user_a: &str, user_b: &str) -> Result<Vec<String>>;
 
     /// Fetch ids of servers that both users share
     async fn fetch_mutual_server_ids(&self, user_a: &str, user_b: &str) -> Result<Vec<String>>;

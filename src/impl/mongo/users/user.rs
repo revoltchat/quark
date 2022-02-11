@@ -1,36 +1,45 @@
+use bson::Document;
+use futures::StreamExt;
+use mongodb::options::{Collation, CollationStrength, FindOneOptions, FindOptions};
+
 use crate::models::user::{FieldsUser, PartialUser, RelationshipStatus, User};
-use crate::{AbstractUser, Result};
+use crate::r#impl::mongo::IntoDocumentPath;
+use crate::{AbstractUser, Error, Result};
 
 use super::super::MongoDb;
+
+lazy_static! {
+    static ref FIND_USERNAME_OPTIONS: FindOneOptions = FindOneOptions::builder()
+        .collation(
+            Collation::builder()
+                .locale("en")
+                .strength(CollationStrength::Secondary)
+                .build()
+        )
+        .build();
+}
+
+static COL: &str = "users";
 
 #[async_trait]
 impl AbstractUser for MongoDb {
     async fn fetch_user(&self, id: &str) -> Result<User> {
-        Ok(User {
-            id: id.into(),
-            username: "username".into(),
-            avatar: None,
-            relations: None,
-
-            badges: None,
-            status: None,
-            profile: None,
-
-            flags: None,
-            bot: None,
-
-            relationship: None,
-            online: None,
-        })
+        self.find_one_by_id(COL, id).await
     }
 
     async fn fetch_user_by_username(&self, username: &str) -> Result<User> {
-        self.fetch_user(username).await
+        self.find_one_with_options(
+            COL,
+            doc! {
+                "username": username
+            },
+            FIND_USERNAME_OPTIONS.clone(),
+        )
+        .await
     }
 
     async fn insert_user(&self, user: &User) -> Result<()> {
-        info!("Insert {:?}", user);
-        Ok(())
+        self.insert_one(COL, user).await.map(|_| ())
     }
 
     async fn update_user(
@@ -39,33 +48,164 @@ impl AbstractUser for MongoDb {
         user: &PartialUser,
         remove: Vec<FieldsUser>,
     ) -> Result<()> {
-        info!("Update {id} with {user:?} and remove {remove:?}");
-        Ok(())
+        self.update_one_by_id(
+            COL,
+            id,
+            user,
+            remove.iter().map(|x| x as &dyn IntoDocumentPath).collect(),
+            None,
+        )
+        .await
+        .map(|_| ())
     }
 
     async fn delete_user(&self, id: &str) -> Result<()> {
-        info!("Delete {id}");
-        Ok(())
+        self.delete_one_by_id(COL, id).await.map(|_| ())
     }
 
-    async fn fetch_users<'a>(&self, _id: &'a [String]) -> Result<Vec<User>> {
-        Ok(vec![self.fetch_user("id").await.unwrap()])
+    async fn fetch_users<'a>(&self, ids: &'a [String]) -> Result<Vec<User>> {
+        let mut cursor = self
+            .col::<User>(COL)
+            .find(
+                doc! {
+                    "_id": {
+                        "$in": ids
+                    }
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "find",
+                with: "users",
+            })?;
+
+        let mut users = vec![];
+        while let Some(Ok(user)) = cursor.next().await {
+            users.push(user);
+        }
+
+        Ok(users)
     }
 
-    async fn is_username_taken(&self, _username: &str) -> Result<bool> {
-        Ok(false)
+    async fn is_username_taken(&self, username: &str) -> Result<bool> {
+        // ! FIXME: move this up to generic
+        match self.fetch_user_by_username(username).await {
+            Ok(_) => Ok(true),
+            Err(Error::NotFound) => Ok(false),
+            Err(error) => Err(error),
+        }
     }
 
-    async fn have_mutual_connection(&self, _user_a: &str, _user_b: &str) -> Result<bool> {
-        Ok(true)
+    async fn fetch_mutual_user_ids(&self, user_a: &str, user_b: &str) -> Result<Vec<String>> {
+        Ok(self
+            .col::<Document>(COL)
+            .find(
+                doc! {
+                    "$and": [
+                        { "relations": { "$elemMatch": { "_id": &user_a, "status": "Friend" } } },
+                        { "relations": { "$elemMatch": { "_id": &user_b, "status": "Friend" } } }
+                    ]
+                },
+                FindOptions::builder().projection(doc! { "_id": 1 }).build(),
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "find",
+                with: "users",
+            })?
+            .filter_map(|s| async { s.ok() })
+            .collect::<Vec<Document>>()
+            .await
+            .into_iter()
+            .filter_map(|x| x.get_str("_id").ok().map(|x| x.to_string()))
+            .collect::<Vec<String>>())
     }
 
-    async fn fetch_mutual_user_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
-        Ok(vec!["a".into()])
+    async fn fetch_mutual_channel_ids(&self, user_a: &str, user_b: &str) -> Result<Vec<String>> {
+        Ok(self
+            .col::<Document>("channels")
+            .find(
+                doc! {
+                    "channel_type": {
+                        "$in": ["Group", "DirectMessage"]
+                    },
+                    "recipients": {
+                        "$all": [ user_a, user_b ]
+                    }
+                },
+                FindOptions::builder().projection(doc! { "_id": 1 }).build(),
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "find",
+                with: "channels",
+            })?
+            .filter_map(|s| async { s.ok() })
+            .collect::<Vec<Document>>()
+            .await
+            .into_iter()
+            .filter_map(|x| x.get_str("_id").ok().map(|x| x.to_string()))
+            .collect::<Vec<String>>())
     }
 
-    async fn fetch_mutual_server_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
-        Ok(vec!["b".into()])
+    async fn fetch_mutual_server_ids(&self, user_a: &str, user_b: &str) -> Result<Vec<String>> {
+        Ok(self
+            .col::<Document>("server_members")
+            .aggregate(
+                vec![
+                    doc! {
+                        "$match": {
+                            "_id.user": user_a
+                        }
+                    },
+                    doc! {
+                        "$lookup": {
+                            "from": "server_members",
+                            "as": "members",
+                            "let": {
+                                "server": "$_id.server"
+                            },
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "$expr": {
+                                            "$and": [
+                                                { "$eq": [ "$_id.user", user_b ] },
+                                                { "$eq": [ "$_id.server", "$$server" ] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    doc! {
+                        "$match": {
+                            "members": {
+                                "$size": 1_i32
+                            }
+                        }
+                    },
+                    doc! {
+                        "$project": {
+                            "_id": "$_id.server"
+                        }
+                    },
+                ],
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "aggregate",
+                with: "server_members",
+            })?
+            .filter_map(|s| async { s.ok() })
+            .collect::<Vec<Document>>()
+            .await
+            .into_iter()
+            .filter_map(|x| x.get_str("_id").ok().map(|i| i.to_string()))
+            .collect::<Vec<String>>())
     }
 
     async fn set_relationship(
@@ -74,12 +214,87 @@ impl AbstractUser for MongoDb {
         target_id: &str,
         relationship: &RelationshipStatus,
     ) -> Result<()> {
-        info!("Set relationship from {user_id} to {target_id} as {relationship:?}");
-        Ok(())
+        if let RelationshipStatus::None = relationship {
+            return self.pull_relationship(user_id, target_id).await;
+        }
+
+        self.col::<Document>(COL)
+            .update_one(
+                doc! {
+                    "_id": user_id
+                },
+                vec![doc! {
+                    "$set": {
+                        "relations": {
+                            "$concatArrays": [
+                                {
+                                    "$ifNull": [
+                                        {
+                                            "$filter": {
+                                                "input": "$relations",
+                                                "cond": {
+                                                    "$ne": [
+                                                        "$$this._id",
+                                                        target_id
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        []
+                                    ]
+                                },
+                                [
+                                    {
+                                        "_id": target_id,
+                                        "status": format!("{:?}", relationship)
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                }],
+                None,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "user",
+            })
     }
 
     async fn pull_relationship(&self, user_id: &str, target_id: &str) -> Result<()> {
-        info!("Removing relationship from {user_id} to {target_id}");
-        Ok(())
+        self.col::<Document>(COL)
+            .update_one(
+                doc! {
+                    "_id": user_id
+                },
+                doc! {
+                    "$pull": {
+                        "relations": {
+                            "_id": target_id
+                        }
+                    }
+                },
+                None,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "user",
+            })
+    }
+}
+
+impl IntoDocumentPath for FieldsUser {
+    fn as_path(&self) -> Option<&'static str> {
+        Some(match self {
+            FieldsUser::Avatar => "avatar",
+            FieldsUser::ProfileBackground => "profile.background",
+            FieldsUser::ProfileContent => "profile.content",
+            FieldsUser::StatusPresence => "status.presence",
+            FieldsUser::StatusText => "status.text",
+        })
     }
 }

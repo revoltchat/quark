@@ -81,8 +81,9 @@ async fn calculate_permission(
     // ! FIXME: add boolean switch for permission for users to mutually DM a user
 
     if data.flag_has_mutual_connection
-        || db
-            .have_mutual_connection(&data.perspective.id, &user.id)
+        || data
+            .perspective
+            .has_mutual_connection(db, &user.id)
             .await
             .unwrap_or(false)
     {

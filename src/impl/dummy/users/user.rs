@@ -56,16 +56,16 @@ impl AbstractUser for DummyDb {
         Ok(false)
     }
 
-    async fn have_mutual_connection(&self, _user_a: &str, _user_b: &str) -> Result<bool> {
-        Ok(true)
-    }
-
     async fn fetch_mutual_user_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
         Ok(vec!["a".into()])
     }
 
-    async fn fetch_mutual_server_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
+    async fn fetch_mutual_channel_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
         Ok(vec!["b".into()])
+    }
+
+    async fn fetch_mutual_server_ids(&self, _user_a: &str, _user_b: &str) -> Result<Vec<String>> {
+        Ok(vec!["c".into()])
     }
 
     async fn set_relationship(

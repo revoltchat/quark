@@ -10,6 +10,8 @@ extern crate optional_struct;
 extern crate lazy_static;
 #[macro_use]
 extern crate bitfield;
+#[macro_use]
+pub extern crate bson;
 
 pub mod r#impl;
 pub mod models;
@@ -34,5 +36,3 @@ use rocket::State;
 
 #[cfg(feature = "rocket_impl")]
 pub type Db = State<Database>;
-
-pub use bson;

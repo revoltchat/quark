@@ -119,6 +119,16 @@ impl User {
         }
     */
 
+    /// Check whether two users have a mutual connection
+    ///
+    /// This will check if user and user_b share a server or a group.
+    pub async fn has_mutual_connection(&self, db: &Database, user_b: &str) -> Result<bool> {
+        Ok(
+            db.fetch_mutual_server_ids(&self.id, user_b).await?.len() > 0
+                || db.fetch_mutual_channel_ids(&self.id, user_b).await?.len() > 0,
+        )
+    }
+
     /// Check if this user can acquire another server
     pub async fn can_acquire_server(&self, db: &Database) -> Result<bool> {
         // ! FIXME: hardcoded max server count

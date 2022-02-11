@@ -1,4 +1,4 @@
-use crate::models::message::{FieldsMessage, Message, MessageSort, PartialMessage};
+use crate::models::message::{Message, MessageSort, PartialMessage};
 use crate::Result;
 
 #[async_trait]
@@ -10,12 +10,7 @@ pub trait AbstractMessage: Sync + Send {
     async fn insert_message(&self, message: &Message) -> Result<()>;
 
     /// Update a given message with new information
-    async fn update_message(
-        &self,
-        id: &str,
-        message: &PartialMessage,
-        remove: Vec<FieldsMessage>,
-    ) -> Result<()>;
+    async fn update_message(&self, id: &str, message: &PartialMessage) -> Result<()>;
 
     /// Delete a message from the database by its id
     async fn delete_message(&self, id: &str) -> Result<()>;

@@ -1,46 +1,68 @@
 use crate::models::bot::{Bot, FieldsBot, PartialBot};
+use crate::r#impl::mongo::IntoDocumentPath;
 use crate::{AbstractBot, Result};
 
 use super::super::MongoDb;
 
+static COL: &str = "bots";
+
 #[async_trait]
 impl AbstractBot for MongoDb {
     async fn fetch_bot(&self, id: &str) -> Result<Bot> {
-        Ok(Bot {
-            id: id.into(),
-            owner: "user".into(),
-            token: "token".into(),
-            public: true,
-            analytics: true,
-            discoverable: true,
-            interactions_url: None,
-        })
+        self.find_one_by_id(COL, id).await
     }
 
-    async fn fetch_bot_by_token(&self, _token: &str) -> Result<Bot> {
-        self.fetch_bot("bot").await
+    async fn fetch_bot_by_token(&self, token: &str) -> Result<Bot> {
+        self.find_one(
+            COL,
+            doc! {
+                "token": token
+            },
+        )
+        .await
     }
 
     async fn insert_bot(&self, bot: &Bot) -> Result<()> {
-        info!("Insert {bot:?}");
-        Ok(())
+        self.insert_one(COL, &bot).await.map(|_| ())
     }
 
     async fn update_bot(&self, id: &str, bot: &PartialBot, remove: Vec<FieldsBot>) -> Result<()> {
-        info!("Update {id} with {bot:?} and remove {remove:?}");
-        Ok(())
+        self.update_one_by_id(
+            COL,
+            id,
+            bot,
+            remove.iter().map(|x| x as &dyn IntoDocumentPath).collect(),
+            None,
+        )
+        .await
+        .map(|_| ())
     }
 
     async fn delete_bot(&self, id: &str) -> Result<()> {
-        info!("Delete {id}");
-        Ok(())
+        self.delete_one_by_id(COL, id).await.map(|_| ())
     }
 
     async fn fetch_bots_by_user(&self, user_id: &str) -> Result<Vec<Bot>> {
-        Ok(vec![self.fetch_bot(user_id).await.unwrap()])
+        self.find(
+            COL,
+            doc! {
+                "owner": user_id
+            },
+        )
+        .await
     }
 
-    async fn get_number_of_bots_by_user(&self, _user_id: &str) -> Result<usize> {
-        Ok(1)
+    async fn get_number_of_bots_by_user(&self, user_id: &str) -> Result<usize> {
+        // ! FIXME: move this to generic?
+        self.fetch_bots_by_user(user_id).await.map(|x| x.len())
+    }
+}
+
+impl IntoDocumentPath for FieldsBot {
+    fn as_path(&self) -> Option<&'static str> {
+        match self {
+            FieldsBot::InteractionsURL => Some("interactions_url"),
+            FieldsBot::Token => None,
+        }
     }
 }
