@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::attachment::File;
 
 /// Composite primary key consisting of server and user id
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct MemberCompositeKey {
     /// Server Id
     pub server: String,
@@ -12,7 +12,7 @@ pub struct MemberCompositeKey {
 }
 
 /// Representation of a member of a server on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct)]
+#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default)]
 #[optional_name = "PartialMember"]
 pub struct Member {
