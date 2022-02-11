@@ -85,7 +85,7 @@ pub enum Flags {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BotInformation {
     /// Id of the owner of this bot
-    owner: String,
+    pub owner: String,
 }
 
 /// Representiation of a User on Revolt.
