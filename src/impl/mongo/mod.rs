@@ -1,3 +1,7 @@
+use std::ops::Deref;
+
+use bson::Document;
+
 use crate::AbstractDatabase;
 
 pub mod admin {
@@ -31,3 +35,21 @@ pub mod users {
 pub struct MongoDb(pub mongodb::Client);
 
 impl AbstractDatabase for MongoDb {}
+
+impl Deref for MongoDb {
+    type Target = mongodb::Client;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl MongoDb {
+    pub fn db(&self) -> mongodb::Database {
+        self.database("revolt")
+    }
+
+    pub fn col(&self, collection: &str) -> mongodb::Collection<Document> {
+        self.db().collection(collection)
+    }
+}
