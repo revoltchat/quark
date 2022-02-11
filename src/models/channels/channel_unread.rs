@@ -17,7 +17,9 @@ pub struct ChannelUnread {
     pub id: ChannelCompositeKey,
 
     /// Id of the last message read in this channel by a user
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub last_id: Option<String>,
     /// Array of message ids that mention the user
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mentions: Option<Vec<String>>,
 }
