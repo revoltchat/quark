@@ -29,6 +29,6 @@ pub mod users {
 }
 
 #[derive(Debug)]
-pub struct DummyDb;
+pub struct MongoDb(pub mongodb::Client);
 
-impl AbstractDatabase for DummyDb {}
+impl AbstractDatabase for MongoDb {}

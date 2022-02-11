@@ -1,10 +1,10 @@
 use crate::models::user::{FieldsUser, PartialUser, RelationshipStatus, User};
 use crate::{AbstractUser, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractUser for DummyDb {
+impl AbstractUser for MongoDb {
     async fn fetch_user(&self, id: &str) -> Result<User> {
         Ok(User {
             id: id.into(),

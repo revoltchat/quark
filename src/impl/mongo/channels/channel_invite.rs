@@ -1,10 +1,10 @@
 use crate::models::Invite;
 use crate::{AbstractChannelInvite, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractChannelInvite for DummyDb {
+impl AbstractChannelInvite for MongoDb {
     async fn fetch_invite(&self, code: &str) -> Result<Invite> {
         Ok(Invite::Server {
             code: code.into(),

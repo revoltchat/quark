@@ -1,10 +1,10 @@
 use crate::models::server_member::{FieldsMember, Member, MemberCompositeKey, PartialMember};
 use crate::{AbstractServerMember, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractServerMember for DummyDb {
+impl AbstractServerMember for MongoDb {
     async fn fetch_member(&self, server: &str, user: &str) -> Result<Member> {
         Ok(Member {
             id: MemberCompositeKey {

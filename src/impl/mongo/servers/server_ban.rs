@@ -2,10 +2,10 @@ use crate::models::server_member::MemberCompositeKey;
 use crate::models::ServerBan;
 use crate::{AbstractServerBan, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractServerBan for DummyDb {
+impl AbstractServerBan for MongoDb {
     async fn fetch_ban(&self, server: &str, user: &str) -> Result<ServerBan> {
         Ok(ServerBan {
             id: MemberCompositeKey {

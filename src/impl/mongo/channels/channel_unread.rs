@@ -1,10 +1,10 @@
 use crate::models::channel_unread::ChannelUnread;
 use crate::{AbstractChannelUnread, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractChannelUnread for DummyDb {
+impl AbstractChannelUnread for MongoDb {
     async fn acknowledge_message(&self, channel: &str, user: &str, message: &str) -> Result<()> {
         info!("Acknowledged {message} in {channel} for {user}");
         Ok(())

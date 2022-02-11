@@ -3,10 +3,10 @@ use crate::models::server::{
 };
 use crate::{AbstractServer, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractServer for DummyDb {
+impl AbstractServer for MongoDb {
     async fn fetch_server(&self, id: &str) -> Result<Server> {
         Ok(Server {
             id: id.into(),

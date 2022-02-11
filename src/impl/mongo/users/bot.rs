@@ -1,10 +1,10 @@
 use crate::models::bot::{Bot, FieldsBot, PartialBot};
 use crate::{AbstractBot, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractBot for DummyDb {
+impl AbstractBot for MongoDb {
     async fn fetch_bot(&self, id: &str) -> Result<Bot> {
         Ok(Bot {
             id: id.into(),

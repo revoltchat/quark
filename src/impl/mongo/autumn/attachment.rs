@@ -1,10 +1,10 @@
 use crate::models::attachment::File;
 use crate::{AbstractAttachment, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractAttachment for DummyDb {
+impl AbstractAttachment for MongoDb {
     async fn find_and_use_attachment(
         &self,
         attachment_id: &str,

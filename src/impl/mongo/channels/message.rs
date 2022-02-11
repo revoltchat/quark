@@ -1,10 +1,10 @@
 use crate::models::message::{Content, FieldsMessage, Message, MessageSort, PartialMessage};
 use crate::{AbstractMessage, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractMessage for DummyDb {
+impl AbstractMessage for MongoDb {
     async fn fetch_message(&self, id: &str) -> Result<Message> {
         Ok(Message {
             id: id.into(),

@@ -1,10 +1,10 @@
 use crate::models::UserSettings;
 use crate::{AbstractUserSettings, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractUserSettings for DummyDb {
+impl AbstractUserSettings for MongoDb {
     async fn fetch_user_settings(
         &'_ self,
         _id: &str,

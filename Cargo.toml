@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-test = [ "async-std", "mongodb/async-std-runtime", "rocket_impl", "rauth" ]
+mongo = [ "mongodb" ]
 rocket_impl = [ "rocket" ]
+test = [ "async-std", "mongo", "mongodb/async-std-runtime", "rocket_impl", "rauth" ]
 default = [ "test" ]
 
 [dependencies]
@@ -18,7 +19,7 @@ validator = { version = "0.14", features = ["derive"] }
 bson = { version = "2.1.0", features = ["chrono-0_4"] }
 
 # Databases
-mongodb = { version = "2.1.0", default-features = false }
+mongodb = { optional = true, version = "2.1.0", default-features = false }
 
 # Async
 futures = "0.3.19"

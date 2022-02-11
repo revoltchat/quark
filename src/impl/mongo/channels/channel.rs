@@ -3,10 +3,10 @@ use std::collections::HashSet;
 use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
 use crate::{AbstractAttachment, AbstractChannel, Error, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractChannel for DummyDb {
+impl AbstractChannel for MongoDb {
     async fn fetch_channel(&self, id: &str) -> Result<Channel> {
         Ok(Channel::Group {
             id: id.into(),

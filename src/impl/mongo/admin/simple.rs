@@ -1,10 +1,10 @@
 use crate::models::simple::SimpleModel;
 use crate::{AbstractSimpleModel, Result};
 
-use super::super::DummyDb;
+use super::super::MongoDb;
 
 #[async_trait]
-impl AbstractSimpleModel for DummyDb {
+impl AbstractSimpleModel for MongoDb {
     async fn fetch_simple(&self) -> Result<SimpleModel> {
         Ok(SimpleModel {
             number: 74,
