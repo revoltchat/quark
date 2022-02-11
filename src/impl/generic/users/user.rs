@@ -103,30 +103,18 @@ impl User {
         user.apply_permission(&permissions)
     }
 
-    /*/// Utility function to get all of a user's memberships
-        pub async fn fetch_memberships(&self, _db: &Database) -> Result<Vec<String>> {
-            todo!();
-        }
-
-        /// Utility function to get all the server IDs the user is in
-        pub async fn fetch_server_ids(&self, _db: &Database) -> Result<Vec<String>> {
-            todo!();
-        }
-
-        /// Utility function to fetch unread objects for user
-        pub async fn fetch_unreads(&self, _db: &Database, _id: &str) -> Result<Vec<String>> {
-            todo!();
-        }
-    */
-
     /// Check whether two users have a mutual connection
     ///
     /// This will check if user and user_b share a server or a group.
     pub async fn has_mutual_connection(&self, db: &Database, user_b: &str) -> Result<bool> {
-        Ok(
-            db.fetch_mutual_server_ids(&self.id, user_b).await?.len() > 0
-                || db.fetch_mutual_channel_ids(&self.id, user_b).await?.len() > 0,
-        )
+        Ok(!db
+            .fetch_mutual_server_ids(&self.id, user_b)
+            .await?
+            .is_empty()
+            || !db
+                .fetch_mutual_channel_ids(&self.id, user_b)
+                .await?
+                .is_empty())
     }
 
     /// Check if this user can acquire another server
