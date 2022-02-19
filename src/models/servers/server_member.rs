@@ -13,7 +13,7 @@ pub struct MemberCompositeKey {
 
 /// Representation of a member of a server on Revolt
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialMember"]
 pub struct Member {
     /// Unique member id
@@ -33,7 +33,7 @@ pub struct Member {
 }
 
 /// Optional fields on server member object
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum FieldsMember {
     Nickname,
     Avatar,

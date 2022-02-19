@@ -33,6 +33,10 @@ impl AbstractServer for DummyDb {
         })
     }
 
+    async fn fetch_servers<'a>(&self, _ids: &'a [String]) -> Result<Vec<Server>> {
+        Ok(vec![self.fetch_server("sus").await.unwrap()])
+    }
+
     async fn insert_server(&self, server: &Server) -> Result<()> {
         info!("Insert {server:?}");
         Ok(())

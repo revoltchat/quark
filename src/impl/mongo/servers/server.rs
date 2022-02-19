@@ -16,6 +16,18 @@ impl AbstractServer for MongoDb {
         self.find_one_by_id(COL, id).await
     }
 
+    async fn fetch_servers<'a>(&self, ids: &'a [String]) -> Result<Vec<Server>> {
+        self.find(
+            COL,
+            doc! {
+                "_id": {
+                    "$in": ids
+                }
+            },
+        )
+        .await
+    }
+
     async fn insert_server(&self, server: &Server) -> Result<()> {
         self.insert_one(COL, server).await.map(|_| ())
     }

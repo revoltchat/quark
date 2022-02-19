@@ -67,7 +67,7 @@ pub enum RemoveMember {
 
 /// Representation of a server on Revolt
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialServer"]
 pub struct Server {
     /// Unique Id
@@ -121,7 +121,7 @@ pub struct Server {
 }
 
 /// Optional fields on server object
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum FieldsServer {
     Description,
     Categories,
@@ -131,7 +131,7 @@ pub enum FieldsServer {
 }
 
 /// Optional fields on server object
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum FieldsRole {
     Colour,
 }

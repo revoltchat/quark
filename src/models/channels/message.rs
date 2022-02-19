@@ -83,7 +83,7 @@ pub struct Masquerade {
 
 /// Representation of a Message on Revolt
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialMessage"]
 pub struct Message {
     /// Unique Id

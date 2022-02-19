@@ -8,6 +8,9 @@ pub trait AbstractChannel: Sync + Send {
     /// Fetch a channel by its id
     async fn fetch_channel(&self, id: &str) -> Result<Channel>;
 
+    /// Fetch channels by their ids
+    async fn fetch_channels<'a>(&self, ids: &'a [String]) -> Result<Vec<Channel>>;
+
     /// Insert a new channel into the database
     async fn insert_channel(&self, channel: &Channel) -> Result<()>;
 

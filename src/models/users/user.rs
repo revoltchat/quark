@@ -90,7 +90,7 @@ pub struct BotInformation {
 
 /// Representiation of a User on Revolt.
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default)]
+#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialUser"]
 pub struct User {
     /// Unique Id
@@ -132,7 +132,7 @@ pub struct User {
 }
 
 /// Optional fields on user object
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum FieldsUser {
     Avatar,
     StatusText,

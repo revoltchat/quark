@@ -13,6 +13,9 @@ extern crate bitfield;
 #[macro_use]
 pub extern crate bson;
 
+pub use redis_kiss;
+
+pub mod events;
 pub mod r#impl;
 pub mod models;
 pub mod types;
@@ -36,3 +39,17 @@ use rocket::State;
 
 #[cfg(feature = "rocket_impl")]
 pub type Db = State<Database>;
+
+pub fn setup_logging() {
+    dotenv::dotenv().ok();
+
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
+
+    if std::env::var("ROCKET_ADDRESS").is_err() {
+        std::env::set_var("ROCKET_ADDRESS", "0.0.0.0");
+    }
+
+    pretty_env_logger::init();
+}

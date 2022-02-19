@@ -67,6 +67,16 @@ impl AbstractServerMember for MongoDb {
         .await
     }
 
+    async fn fetch_all_memberships<'a>(&self, user: &str) -> Result<Vec<Member>> {
+        self.find(
+            COL,
+            doc! {
+                "_id.user": user
+            },
+        )
+        .await
+    }
+
     async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>> {
         self.find(
             COL,

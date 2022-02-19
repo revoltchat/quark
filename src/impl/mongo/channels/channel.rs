@@ -16,6 +16,18 @@ impl AbstractChannel for MongoDb {
         self.find_one_by_id(COL, id).await
     }
 
+    async fn fetch_channels<'a>(&self, ids: &'a [String]) -> Result<Vec<Channel>> {
+        self.find(
+            COL,
+            doc! {
+                "_id": {
+                    "$in": ids
+                }
+            },
+        )
+        .await
+    }
+
     async fn insert_channel(&self, channel: &Channel) -> Result<()> {
         self.insert_one(COL, channel).await.map(|_| ())
     }

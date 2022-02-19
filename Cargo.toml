@@ -20,6 +20,7 @@ bson = { version = "2.1.0", features = ["chrono-0_4"] }
 serde_json = "1.0.78"
 
 # Databases
+redis-kiss = "0.1.1"
 mongodb = { optional = true, version = "2.1.0", default-features = false }
 
 # Async
@@ -28,12 +29,14 @@ async-trait = "0.1.51"
 async-std = { version = "1.8.0", features = ["attributes"], optional = true }
 
 # Logging
-log = "0.4"
+log = "0.4.14"
+pretty_env_logger = "0.4.0"
 
 # Util
 ops = "0.6.0"
 ulid = "0.5.0"
 nanoid = "0.4.0"
+dotenv = "0.15.0"
 impl_ops = "0.1.1"
 num_enum = "0.5.6"
 bitfield = "0.13.2"

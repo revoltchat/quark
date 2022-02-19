@@ -41,6 +41,10 @@ impl AbstractServerMember for DummyDb {
         Ok(vec![self.fetch_member(server, "member").await.unwrap()])
     }
 
+    async fn fetch_all_memberships<'a>(&self, user: &str) -> Result<Vec<Member>> {
+        Ok(vec![self.fetch_member("server", user).await.unwrap()])
+    }
+
     async fn fetch_members<'a>(&self, server: &str, _ids: &'a [String]) -> Result<Vec<Member>> {
         Ok(vec![self.fetch_member(server, "member").await.unwrap()])
     }

@@ -56,11 +56,19 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    pub fn server_opt(self, server: Option<&'a Server>) -> PermissionCalculator {
+        PermissionCalculator { server, ..self }
+    }
+
     pub fn member(self, member: &'a Member) -> PermissionCalculator {
         PermissionCalculator {
             member: Some(member),
             ..self
         }
+    }
+
+    pub fn member_opt(self, member: Option<&'a Member>) -> PermissionCalculator {
+        PermissionCalculator { member, ..self }
     }
 
     pub fn with_relationship(self, relationship: &'a RelationshipStatus) -> PermissionCalculator {

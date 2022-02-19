@@ -4,13 +4,13 @@ use rocket::{
     serde::json::serde_json::json,
     Request, Response,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use validator::ValidationErrors;
 
 use crate::UserPermission;
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Error {
     LabelMe,
@@ -67,11 +67,13 @@ pub enum Error {
     },
     InvalidOperation,
     InvalidCredentials,
+    InvalidSession,
     DuplicateNonce,
     VosoUnavailable,
     NotFound,
     NoEffect,
     FailedValidation {
+        #[serde(skip_deserializing)]
         error: ValidationErrors,
     },
 }
@@ -145,6 +147,7 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::MissingPermission { .. } => Status::Forbidden,
             Error::InvalidOperation => Status::BadRequest,
             Error::InvalidCredentials => Status::Forbidden,
+            Error::InvalidSession => Status::Forbidden,
             Error::DuplicateNonce => Status::Conflict,
             Error::VosoUnavailable => Status::BadRequest,
             Error::NotFound => Status::NotFound,

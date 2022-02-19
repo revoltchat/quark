@@ -129,7 +129,7 @@ pub enum Channel {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct PartialChannel {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -150,7 +150,7 @@ pub struct PartialChannel {
 }
 
 /// Optional fields on channel object
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum FieldsChannel {
     Description,
     Icon,

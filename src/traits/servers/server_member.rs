@@ -23,6 +23,9 @@ pub trait AbstractServerMember: Sync + Send {
     /// Fetch all members in a server
     async fn fetch_all_members<'a>(&self, server: &str) -> Result<Vec<Member>>;
 
+    /// Fetch all memberships for a user
+    async fn fetch_all_memberships<'a>(&self, user: &str) -> Result<Vec<Member>>;
+
     /// Fetch multiple members by their ids
     async fn fetch_members<'a>(&self, server: &str, ids: &'a [String]) -> Result<Vec<Member>>;
 

@@ -28,6 +28,10 @@ impl AbstractChannel for DummyDb {
         })
     }
 
+    async fn fetch_channels<'a>(&self, _ids: &'a [String]) -> Result<Vec<Channel>> {
+        Ok(vec![self.fetch_channel("sus").await.unwrap()])
+    }
+
     async fn insert_channel(&self, channel: &Channel) -> Result<()> {
         info!("Insert {channel:?}");
         Ok(())

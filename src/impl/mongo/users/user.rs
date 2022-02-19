@@ -38,6 +38,25 @@ impl AbstractUser for MongoDb {
         .await
     }
 
+    async fn fetch_user_by_token(&self, token: &str) -> Result<User> {
+        let session = self
+            .col::<Document>("sessions")
+            .find_one(
+                doc! {
+                    "token": token
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "find_one",
+                with: "sessions",
+            })?
+            .ok_or(Error::InvalidSession)?;
+
+        self.fetch_user(session.get_str("user_id").unwrap()).await
+    }
+
     async fn insert_user(&self, user: &User) -> Result<()> {
         self.insert_one(COL, user).await.map(|_| ())
     }
