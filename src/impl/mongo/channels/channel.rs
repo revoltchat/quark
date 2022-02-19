@@ -50,6 +50,7 @@ impl AbstractChannel for MongoDb {
     }
 
     async fn delete_channel(&self, id: &str) -> Result<()> {
+        // ! FIXME: enforce referential integrity
         self.delete_one_by_id(COL, id).await.map(|_| ())
     }
 

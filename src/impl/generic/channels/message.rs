@@ -1,11 +1,66 @@
+use ulid::Ulid;
+
 use crate::{
+    events::client::EventV1,
     models::{
-        message::{BulkMessageResponse, Content, SendableEmbed, SystemMessage},
+        message::{BulkMessageResponse, Content, PartialMessage, SendableEmbed, SystemMessage},
         Channel, Message,
     },
     types::january::{Embed, Text},
     Database, Result,
 };
+
+impl Message {
+    /// Create a message
+    pub async fn create(&mut self, db: &Database) -> Result<()> {
+        db.insert_message(self).await?;
+        EventV1::Message(self.clone()).p(self.channel.clone()).await;
+        Ok(())
+    }
+
+    /// Update message data
+    pub async fn update<'a>(&mut self, db: &Database, partial: PartialMessage) -> Result<()> {
+        self.apply_options(partial.clone());
+        db.update_message(&self.id, &partial).await?;
+
+        EventV1::MessageUpdate {
+            id: self.id.clone(),
+            channel: self.channel.clone(),
+            data: partial,
+        }
+        .p(self.channel.clone())
+        .await;
+
+        Ok(())
+    }
+
+    /// Delete a message
+    pub async fn delete(self, db: &Database) -> Result<()> {
+        db.delete_message(&self.id).await?;
+        EventV1::MessageDelete {
+            id: self.id,
+            channel: self.channel.clone(),
+        }
+        .p(self.channel)
+        .await;
+        Ok(())
+    }
+
+    // Send a message as the system
+    pub async fn send_as_system(db: &Database, channel: &str, content: Content) -> Result<()> {
+        let message = Message {
+            id: Ulid::new().to_string(),
+            channel: channel.to_string(),
+            author: "00000000000000000000000000".to_string(),
+
+            content,
+
+            ..Default::default()
+        };
+
+        db.insert_message(&message).await
+    }
+}
 
 pub trait IntoUsers {
     fn get_user_ids(&self) -> Vec<String>;

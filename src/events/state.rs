@@ -59,9 +59,14 @@ impl State {
 
     pub fn apply_state(&mut self) -> SubscriptionStateChange {
         let state = std::mem::replace(&mut self.state, SubscriptionStateChange::None);
-        #[allow(clippy::match_single_binding)]
-        match &state {
-            _ => {}
+        if let SubscriptionStateChange::Change { add, remove } = &state {
+            for id in add {
+                self.subscribed.insert(id.clone());
+            }
+
+            for id in remove {
+                self.subscribed.remove(id);
+            }
         }
 
         state
@@ -102,7 +107,7 @@ impl State {
     }
 
     pub fn remove_subscription(&mut self, subscription: &str) {
-        if self.subscribed.contains(&subscription.to_string()) {
+        if !self.subscribed.contains(&subscription.to_string()) {
             return;
         }
 

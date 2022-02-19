@@ -86,7 +86,7 @@ impl Cache {
 
 impl State {
     pub async fn generate_ready_payload(&mut self, db: &Database) -> Result<EventV1> {
-        let user = self.clone_user();
+        let mut user = self.clone_user();
 
         // Find all relationships to the user.
         let mut user_ids: Vec<String> = user
@@ -156,6 +156,7 @@ impl State {
             .map(|x| x.with_relationship(&user))
             .collect();
 
+        user.relationship = Some(RelationshipStatus::User);
         users.push(user.foreign());
 
         // Set subscription state internally.
@@ -242,7 +243,16 @@ impl State {
         }
     }
 
-    pub async fn handle_incoming_event_v1(&mut self, db: &Database, event: &mut EventV1) {
+    pub async fn handle_incoming_event_v1(&mut self, db: &Database, event: &mut EventV1) -> bool {
+        if match event {
+            EventV1::UserRelationship { id, .. }
+            | EventV1::UserSettingsUpdate { id, .. }
+            | EventV1::ChannelAck { id, .. } => id != &self.cache.user_id,
+            _ => true,
+        } {
+            return false;
+        }
+
         match event {
             EventV1::ChannelCreate(channel) => {
                 let id = channel.id().to_string();
@@ -392,6 +402,8 @@ impl State {
             }
             _ => {}
         }
+
+        true
     }
 }
 

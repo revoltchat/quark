@@ -1,3 +1,4 @@
+use crate::events::client::EventV1;
 use crate::models::user::{Badges, FieldsUser, PartialUser, Presence, RelationshipStatus, User};
 use crate::permissions::defn::UserPerms;
 use crate::permissions::r#impl::user::get_relationship;
@@ -10,6 +11,32 @@ use std::ops;
 impl_op_ex_commutative!(+ |a: &i32, b: &Badges| -> i32 { *a | *b as i32 });
 
 impl User {
+    /// Update user data
+    pub async fn update<'a>(
+        &mut self,
+        db: &Database,
+        partial: PartialUser,
+        remove: Vec<FieldsUser>,
+    ) -> Result<()> {
+        for field in &remove {
+            self.remove(field);
+        }
+
+        self.apply_options(partial.clone());
+
+        db.update_user(&self.id, &partial, remove.clone()).await?;
+
+        EventV1::UserUpdate {
+            id: self.id.clone(),
+            data: partial,
+            clear: remove,
+        }
+        .p(self.id.clone())
+        .await;
+
+        Ok(())
+    }
+
     /// Remove a field from User object
     pub fn remove(&mut self, field: &FieldsUser) {
         match field {
@@ -129,18 +156,15 @@ impl User {
             return Err(Error::UsernameTaken);
         }
 
-        self.username = username.clone();
-        db.update_user(
-            &self.id,
-            &PartialUser {
+        self.update(
+            db,
+            PartialUser {
                 username: Some(username),
                 ..Default::default()
             },
             vec![],
         )
-        .await?;
-
-        Ok(())
+        .await
     }
 
     /// Apply a certain relationship between two users
@@ -162,6 +186,22 @@ impl User {
                 with: "user",
             });
         }
+
+        EventV1::UserRelationship {
+            id: self.id.clone(),
+            user: self.clone(),
+            status: remote,
+        }
+        .p(target.id.clone())
+        .await;
+
+        EventV1::UserRelationship {
+            id: target.id.clone(),
+            user: target.clone(),
+            status: local.clone(),
+        }
+        .p(self.id.clone())
+        .await;
 
         target.relationship.replace(local);
         Ok(())
