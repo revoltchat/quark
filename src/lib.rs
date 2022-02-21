@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate async_trait;
 #[macro_use]
+extern crate async_recursion;
+#[macro_use]
 extern crate log;
 #[macro_use]
 extern crate impl_ops;

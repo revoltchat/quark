@@ -1,12 +1,14 @@
+use std::env;
 use std::ops::Deref;
 
 use crate::r#impl::dummy::DummyDb;
 use crate::r#impl::mongo::MongoDb;
 use crate::AbstractDatabase;
 
-pub enum DatabaseInfo<'a> {
+pub enum DatabaseInfo {
+    Auto,
     Dummy,
-    MongoDb(&'a str),
+    MongoDb(String),
     MongoDbFromClient(mongodb::Client),
 }
 
@@ -16,9 +18,17 @@ pub enum Database {
     MongoDb(MongoDb),
 }
 
-impl DatabaseInfo<'_> {
+impl DatabaseInfo {
+    #[async_recursion]
     pub async fn connect(self) -> Result<Database, String> {
         Ok(match self {
+            DatabaseInfo::Auto => {
+                if let Ok(uri) = env::var("MONGODB") {
+                    return DatabaseInfo::MongoDb(uri).connect().await;
+                }
+
+                DatabaseInfo::Dummy.connect().await?
+            }
             DatabaseInfo::Dummy => Database::Dummy(DummyDb),
             DatabaseInfo::MongoDb(uri) => {
                 let client = mongodb::Client::with_uri_str(uri)
