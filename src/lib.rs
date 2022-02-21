@@ -18,6 +18,7 @@ pub use redis_kiss;
 pub mod events;
 pub mod r#impl;
 pub mod models;
+pub mod presence;
 pub mod types;
 
 mod database;

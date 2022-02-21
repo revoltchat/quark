@@ -1,7 +1,9 @@
+use futures::future::join;
 use rocket::request::FromParam;
 use serde::{Deserialize, Serialize};
 
 use crate::models::{Bot, Channel, Invite, Member, Message, Server, ServerBan, User};
+use crate::presence::presence_is_online;
 use crate::{Database, Result};
 
 #[derive(Serialize, Deserialize)]
@@ -15,7 +17,10 @@ impl Ref {
     }
 
     pub async fn as_user(&self, db: &Database) -> Result<User> {
-        db.fetch_user(&self.id).await
+        let (user, online) = join(db.fetch_user(&self.id), presence_is_online(&self.id)).await;
+        let mut user = user?;
+        user.online = Some(online);
+        Ok(user)
     }
 
     pub async fn as_channel(&self, db: &Database) -> Result<Channel> {

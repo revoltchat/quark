@@ -65,11 +65,9 @@ impl User {
     }
 
     /// Mutate the user object to remove redundant information
-    #[must_use]
     pub fn foreign(mut self) -> User {
         self.profile = None;
         self.relations = None;
-        self.online = Some(true);
 
         let mut badges = self.badges.unwrap_or(0);
         if let Ok(id) = ulid::Ulid::from_string(&self.id) {

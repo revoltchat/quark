@@ -3,7 +3,9 @@ use std::collections::HashSet;
 use crate::{
     get_relationship,
     models::{server_member::FieldsMember, user::RelationshipStatus, Channel, Member, User},
-    perms, Database, Result,
+    perms,
+    presence::presence_filter_online,
+    Database, Result,
 };
 
 use super::{
@@ -120,6 +122,10 @@ impl State {
             }
         }
 
+        // Fetch presence data for known users.
+        let online_ids = presence_filter_online(&user_ids).await;
+        user.online = Some(true);
+
         // Fetch user data.
         let users = db
             .fetch_users(
@@ -153,9 +159,13 @@ impl State {
         // Make all users appear from our perspective.
         let mut users: Vec<User> = users
             .into_iter()
-            .map(|x| x.with_relationship(&user))
+            .map(|mut x| {
+                x.online = Some(online_ids.contains(&x.id));
+                x.with_relationship(&user)
+            })
             .collect();
 
+        // Make sure we see our own user correctly.
         user.relationship = Some(RelationshipStatus::User);
         users.push(user.foreign());
 
