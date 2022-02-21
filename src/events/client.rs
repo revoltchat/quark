@@ -26,6 +26,8 @@ pub enum Ping {
     Number(usize),
 }
 
+#[derive(Serialize)]
+#[serde(untagged)]
 pub enum ErrorEvent {
     Error(WebSocketError),
     APIError(Error),
