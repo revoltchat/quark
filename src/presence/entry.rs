@@ -7,6 +7,7 @@ lazy_static! {
         .unwrap_or_else(|_| "0".to_string())
         .parse()
         .unwrap();
+    pub static ref REGION_KEY: String = format!("region{}", &*REGION_ID);
 }
 
 #[derive(Serialize, Deserialize)]
