@@ -8,34 +8,19 @@ mod operations;
 use entry::{PresenceEntry, PresenceOp};
 use operations::{__delete_key, __get_key, __set_key};
 
+/// Create a new presence session, returns the ID of this session.
 pub async fn presence_create_session(user_id: &str, flags: u8) -> u8 {
     info!("Creating a presence session for {user_id} with flags {flags}");
-    let region_id = 5;
 
     let mut conn = get_connection().await.unwrap();
     let entry: Option<Vec<PresenceEntry>> = __get_key(&mut conn, user_id).await;
     if let Some(mut entry) = entry {
         let session_id = entry.find_next_id();
-        entry.push(PresenceEntry {
-            region_id,
-            session_id,
-            flags,
-        });
-
+        entry.push(PresenceEntry::from(session_id, flags));
         __set_key(&mut conn, user_id, entry).await;
         session_id
     } else {
-        __set_key(
-            &mut conn,
-            user_id,
-            vec![PresenceEntry {
-                region_id,
-                session_id: 0,
-                flags,
-            }],
-        )
-        .await;
-
+        __set_key(&mut conn, user_id, vec![PresenceEntry::from(0, flags)]).await;
         0
     }
 }
