@@ -1,55 +1,12 @@
 use std::collections::HashSet;
 
-use redis_kiss::{get_connection, AsyncCommands, Conn};
-use serde::{Deserialize, Serialize};
+use redis_kiss::{get_connection, AsyncCommands};
 
-#[derive(Serialize, Deserialize)]
-struct PresenceEntry {
-    pub region_id: u16,
-    pub session_id: u8,
-    pub flags: u8,
-}
+mod entry;
+mod operations;
 
-trait PresenceOp {
-    fn find_next_id(&self) -> u8;
-}
-
-impl PresenceOp for Vec<PresenceEntry> {
-    fn find_next_id(&self) -> u8 {
-        // O(n^2) scan algorithm
-        // should be relatively fast at low numbers anyways
-        for i in 0..255 {
-            let mut found = false;
-            for entry in self {
-                if entry.session_id == i {
-                    found = true;
-                    break;
-                }
-            }
-
-            if !found {
-                return i;
-            }
-        }
-
-        255
-    }
-}
-
-async fn __set_key(conn: &mut Conn, id: &str, data: Vec<PresenceEntry>) {
-    let _: Option<()> = conn.set(id, bincode::serialize(&data).unwrap()).await.ok();
-}
-
-async fn __delete_key(conn: &mut Conn, id: &str) {
-    let _: Option<()> = conn.del(id).await.ok();
-}
-
-async fn __get_key(conn: &mut Conn, id: &str) -> Option<Vec<PresenceEntry>> {
-    conn.get::<_, Option<Vec<u8>>>(id)
-        .await
-        .unwrap()
-        .map(|entry| bincode::deserialize(&entry[..]).unwrap())
-}
+use entry::{PresenceEntry, PresenceOp};
+use operations::{__delete_key, __get_key, __set_key};
 
 pub async fn presence_create_session(user_id: &str, flags: u8) -> u8 {
     info!("Creating a presence session for {user_id} with flags {flags}");
