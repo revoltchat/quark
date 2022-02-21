@@ -131,7 +131,7 @@ impl Server {
         .p(self.id.clone())
         .await;
 
-        db.delete_server(&self.id).await
+        db.delete_server(&self).await
     }
 
     /// Remove a field from Server

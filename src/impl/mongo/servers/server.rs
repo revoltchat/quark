@@ -1,4 +1,4 @@
-use bson::{to_document, Document};
+use bson::{to_document, Bson, Document};
 
 use crate::models::server::{
     FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
@@ -9,6 +9,60 @@ use crate::{AbstractServer, Database, Error, Result};
 use super::super::MongoDb;
 
 static COL: &str = "servers";
+
+impl MongoDb {
+    pub async fn delete_associated_server_objects(&self, server: &Server) -> Result<()> {
+        // Check if there are any attachments we need to delete.
+        self.delete_bulk_messages(doc! {
+            "channel": {
+                "$in": &server.channels
+            }
+        })
+        .await?;
+
+        // Delete all channels.
+        self.col::<Document>("channels")
+            .delete_many(
+                doc! {
+                    "server": &server.id
+                },
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "delete_many",
+                with: "channels",
+            })?;
+
+        // Delete any associated objects, e.g. unreads and invites.
+        self.delete_associated_channel_objects(Bson::Document(doc! { "$in": &server.channels }))
+            .await?;
+
+        // Delete members and bans.
+        for with in &["server_members", "server_bans"] {
+            self.col::<Document>(with)
+                .delete_many(
+                    doc! {
+                        "_id.server": &server.id
+                    },
+                    None,
+                )
+                .await
+                .map_err(|_| Error::DatabaseError {
+                    operation: "delete_many",
+                    with,
+                })?;
+        }
+
+        // Update many attachments with parent id.
+        self.delete_many_attachments(doc! {
+            "object_id": &server.id
+        })
+        .await?;
+
+        Ok(())
+    }
+}
 
 #[async_trait]
 impl AbstractServer for MongoDb {
@@ -49,9 +103,9 @@ impl AbstractServer for MongoDb {
         .map(|_| ())
     }
 
-    async fn delete_server(&self, id: &str) -> Result<()> {
-        // ! FIXME: enforce referential integrity
-        self.delete_one_by_id(COL, id).await.map(|_| ())
+    async fn delete_server(&self, server: &Server) -> Result<()> {
+        self.delete_associated_server_objects(server).await?;
+        self.delete_one_by_id(COL, &server.id).await.map(|_| ())
     }
 
     async fn insert_role(&self, server_id: &str, role_id: &str, role: &Role) -> Result<()> {

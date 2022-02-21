@@ -7,6 +7,27 @@ use super::super::MongoDb;
 
 static COL: &str = "attachments";
 
+impl MongoDb {
+    pub async fn delete_many_attachments(&self, projection: Document) -> Result<()> {
+        self.col::<Document>(COL)
+            .update_many(
+                projection,
+                doc! {
+                    "$set": {
+                        "deleted": true
+                    }
+                },
+                None,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_many",
+                with: "attachment",
+            })
+    }
+}
+
 #[async_trait]
 impl AbstractAttachment for MongoDb {
     async fn find_and_use_attachment(

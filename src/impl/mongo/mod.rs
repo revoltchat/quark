@@ -7,7 +7,7 @@ use mongodb::{
     results::{DeleteResult, InsertOneResult, UpdateResult},
 };
 use rocket::serde::DeserializeOwned;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     util::manipulation::{prefix_keys, remove_null_keys},
@@ -236,6 +236,12 @@ impl MongoDb {
         )
         .await
     }
+}
+
+#[derive(Deserialize)]
+pub struct DocumentId {
+    #[serde(rename = "_id")]
+    pub id: String,
 }
 
 pub trait IntoDocumentPath: Send + Sync {

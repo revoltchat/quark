@@ -80,12 +80,9 @@ impl Channel {
 
     /// Delete a channel
     pub async fn delete(self, db: &Database) -> Result<()> {
-        let id = self.as_id();
-        EventV1::ChannelDelete { id: id.clone() }
-            .p(id.clone())
-            .await;
-
-        db.delete_channel(&id).await
+        let id = self.id().to_string();
+        EventV1::ChannelDelete { id: id.clone() }.p(id).await;
+        db.delete_channel(&self).await
     }
 
     /// Remove a field from Channel object
@@ -256,7 +253,7 @@ impl Channel {
 
     /// Remove user from a group
     pub async fn remove_user_from_group(&self, db: &Database, user: &str) -> Result<()> {
-        match self {
+        match &self {
             Channel::Group {
                 id,
                 owner,
@@ -275,7 +272,7 @@ impl Channel {
                         )
                         .await?;
                     } else {
-                        db.delete_channel(id).await?;
+                        db.delete_channel(self).await?;
                         return Ok(());
                     }
                 }

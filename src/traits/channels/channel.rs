@@ -28,7 +28,7 @@ pub trait AbstractChannel: Sync + Send {
     /// Delete a channel by its id
     ///
     /// This will also delete all associated messages and files.
-    async fn delete_channel(&self, id: &str) -> Result<()>;
+    async fn delete_channel(&self, channel: &Channel) -> Result<()>;
 
     /// Find a direct messages that a user is involved in
     ///

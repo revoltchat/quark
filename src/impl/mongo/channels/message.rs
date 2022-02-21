@@ -1,12 +1,73 @@
+use bson::Document;
 use futures::try_join;
 use mongodb::options::FindOptions;
 
 use crate::models::message::{Message, MessageSort, PartialMessage};
-use crate::{AbstractMessage, Result};
+use crate::r#impl::mongo::DocumentId;
+use crate::{AbstractMessage, Error, Result};
 
 use super::super::MongoDb;
 
 static COL: &str = "messages";
+
+impl MongoDb {
+    pub async fn delete_bulk_messages(&self, projection: Document) -> Result<()> {
+        let mut for_attachments = projection.clone();
+        for_attachments.insert(
+            "attachment",
+            doc! {
+                "$exists": 1_i32
+            },
+        );
+
+        // Check if there are any attachments we need to delete.
+        let message_ids = self
+            .find_with_options::<_, DocumentId>(
+                COL,
+                for_attachments,
+                FindOptions::builder()
+                    .projection(doc! { "_id": 1_i32 })
+                    .build(),
+            )
+            .await?
+            .into_iter()
+            .map(|x| x.id)
+            .collect::<Vec<String>>();
+
+        // If we found any, mark them as deleted.
+        if !message_ids.is_empty() {
+            self.col::<Document>("attachments")
+                .update_many(
+                    doc! {
+                        "message_id": {
+                            "$in": message_ids
+                        }
+                    },
+                    doc! {
+                        "$set": {
+                            "deleted": true
+                        }
+                    },
+                    None,
+                )
+                .await
+                .map_err(|_| Error::DatabaseError {
+                    operation: "update_many",
+                    with: "attachments",
+                })?;
+        }
+
+        // And then delete said messages.
+        self.col::<Document>(COL)
+            .delete_many(projection, None)
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "delete_many",
+                with: "messages",
+            })
+    }
+}
 
 #[async_trait]
 impl AbstractMessage for MongoDb {

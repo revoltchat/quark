@@ -52,8 +52,8 @@ impl AbstractServer for DummyDb {
         Ok(())
     }
 
-    async fn delete_server(&self, id: &str) -> Result<()> {
-        info!("Delete {id}");
+    async fn delete_server(&self, server: &Server) -> Result<()> {
+        info!("Delete {server:?}");
         Ok(())
     }
 

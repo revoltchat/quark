@@ -47,8 +47,8 @@ impl AbstractChannel for DummyDb {
         Ok(())
     }
 
-    async fn delete_channel(&self, id: &str) -> Result<()> {
-        info!("Delete {id}");
+    async fn delete_channel(&self, channel: &Channel) -> Result<()> {
+        info!("Delete {channel:?}");
         Ok(())
     }
 
