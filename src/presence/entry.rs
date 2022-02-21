@@ -10,7 +10,7 @@ lazy_static! {
     pub static ref REGION_KEY: String = format!("region{}", &*REGION_ID);
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PresenceEntry {
     pub region_id: u16,
     pub session_id: u8,
@@ -32,6 +32,7 @@ pub trait PresenceOp {
 }
 
 impl PresenceOp for Vec<PresenceEntry> {
+    /// Find next available session ID
     fn find_next_id(&self) -> u8 {
         // O(n^2) scan algorithm
         // should be relatively fast at low numbers anyways

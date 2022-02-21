@@ -2,7 +2,11 @@ use std::collections::HashSet;
 
 use crate::{
     get_relationship,
-    models::{server_member::FieldsMember, user::RelationshipStatus, Channel, Member, User},
+    models::{
+        server_member::FieldsMember,
+        user::{PartialUser, Presence, RelationshipStatus},
+        Channel, Member, User,
+    },
     perms,
     presence::presence_filter_online,
     Database, Result,
@@ -253,12 +257,35 @@ impl State {
         }
     }
 
+    pub async fn broadcast_presence_change(&self, target: bool) {
+        if if let Some(status) = &self.cache.users.get(&self.cache.user_id).unwrap().status {
+            status.presence != Some(Presence::Invisible)
+        } else {
+            true
+        } {
+            let event = EventV1::UserUpdate {
+                id: self.cache.user_id.clone(),
+                data: PartialUser {
+                    online: Some(target),
+                    ..Default::default()
+                },
+                clear: vec![],
+            };
+
+            for server in self.cache.servers.keys() {
+                event.clone().p(server.clone()).await;
+            }
+
+            event.p(self.cache.user_id.clone()).await;
+        }
+    }
+
     pub async fn handle_incoming_event_v1(&mut self, db: &Database, event: &mut EventV1) -> bool {
         if match event {
             EventV1::UserRelationship { id, .. }
             | EventV1::UserSettingsUpdate { id, .. }
             | EventV1::ChannelAck { id, .. } => id != &self.cache.user_id,
-            _ => true,
+            _ => false,
         } {
             return false;
         }
@@ -419,6 +446,13 @@ impl State {
 
 impl EventV1 {
     pub async fn p(self, channel: String) {
+        #[cfg(not(debug_assertions))]
         redis_kiss::p(channel, self).await;
+
+        #[cfg(debug_assertions)]
+        info!("Publishing event to {channel}: {self:?}");
+
+        #[cfg(debug_assertions)]
+        redis_kiss::publish(channel, self).await.unwrap();
     }
 }

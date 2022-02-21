@@ -16,7 +16,7 @@ use crate::presence::operations::__delete_set_sessions;
 use self::entry::REGION_KEY;
 
 /// Create a new presence session, returns the ID of this session
-pub async fn presence_create_session(user_id: &str, flags: u8) -> u8 {
+pub async fn presence_create_session(user_id: &str, flags: u8) -> (bool, u8) {
     info!("Creating a presence session for {user_id} with flags {flags}");
 
     // Try to find the presence entry for this user.
@@ -25,6 +25,10 @@ pub async fn presence_create_session(user_id: &str, flags: u8) -> u8 {
         .await
         .unwrap_or_default();
 
+    // Return whether this was the first session.
+    let was_empty = entry.is_empty();
+    info!("User ID {} just came online.", &user_id);
+
     // Generate session ID and push new entry.
     let session_id = entry.find_next_id();
     entry.push(PresenceEntry::from(session_id, flags));
@@ -32,17 +36,24 @@ pub async fn presence_create_session(user_id: &str, flags: u8) -> u8 {
 
     // Add to region set in case of failure.
     __add_to_set_sessions(&mut conn, &*REGION_KEY, user_id, session_id).await;
-    session_id
+    (was_empty, session_id)
 }
 
 /// Delete existing presence session
-pub async fn presence_delete_session(user_id: &str, session_id: u8) {
-    presence_delete_session_internal(user_id, session_id, false).await;
+pub async fn presence_delete_session(user_id: &str, session_id: u8) -> bool {
+    presence_delete_session_internal(user_id, session_id, false).await
 }
 
 /// Delete existing presence session (but also choose whether to skip region)
-async fn presence_delete_session_internal(user_id: &str, session_id: u8, skip_region: bool) {
+async fn presence_delete_session_internal(
+    user_id: &str,
+    session_id: u8,
+    skip_region: bool,
+) -> bool {
     info!("Deleting presence session for {user_id} with id {session_id}");
+
+    // Return whether this was the last session.
+    let mut is_empty = false;
 
     // Only continue if we can actually find one.
     let mut conn = get_connection().await.unwrap();
@@ -56,6 +67,7 @@ async fn presence_delete_session_internal(user_id: &str, session_id: u8, skip_re
         // If entry is empty, then just delete it.
         if entries.is_empty() {
             __delete_key_presence_entry(&mut conn, user_id).await;
+            is_empty = true;
         } else {
             __set_key_presence_entry(&mut conn, user_id, entries).await;
         }
@@ -65,6 +77,12 @@ async fn presence_delete_session_internal(user_id: &str, session_id: u8, skip_re
             __remove_from_set_sessions(&mut conn, &*REGION_KEY, user_id, session_id).await;
         }
     }
+
+    if is_empty {
+        info!("User ID {} just went offline.", &user_id);
+    }
+
+    is_empty
 }
 
 /// Check whether a given user ID is online
