@@ -9,10 +9,7 @@ use mongodb::{
 use rocket::serde::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    util::manipulation::{prefix_keys, remove_null_keys},
-    AbstractDatabase, Error, Result,
-};
+use crate::{util::manipulation::prefix_keys, AbstractDatabase, Error, Result};
 
 pub mod admin {
     pub mod migrations;
@@ -175,7 +172,11 @@ impl MongoDb {
 
         let query = doc! {
             "$unset": unset,
-            "$set": to_document(&if let Some(prefix) = &prefix { prefix_keys(&partial, prefix) } else { remove_null_keys(&partial) }).map_err(|_| Error::DatabaseError {
+            "$set": if let Some(prefix) = &prefix {
+                to_document(&prefix_keys(&partial, prefix))
+            } else {
+                to_document(&partial)
+            }.map_err(|_| Error::DatabaseError {
                 operation: "to_document",
                 with: collection
             })?

@@ -7,8 +7,9 @@ pub fn if_false(t: &bool) -> bool {
 
 /// Representation of a bot on Revolt
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_name = "PartialBot"]
 #[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[optional_name = "PartialBot"]
+#[opt_skip_serializing_none]
 pub struct Bot {
     /// Unique Id
     /// Matches the user id of the bot

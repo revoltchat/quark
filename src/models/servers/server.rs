@@ -19,6 +19,7 @@ pub fn if_false(t: &bool) -> bool {
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[optional_name = "PartialRole"]
+#[opt_skip_serializing_none]
 pub struct Role {
     pub name: String,
     pub permissions: PermissionTuple,
@@ -69,6 +70,7 @@ pub enum RemoveMember {
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialServer"]
+#[opt_skip_serializing_none]
 pub struct Server {
     /// Unique Id
     #[serde(rename = "_id")]

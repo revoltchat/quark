@@ -15,6 +15,7 @@ pub struct MemberCompositeKey {
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialMember"]
+#[opt_skip_serializing_none]
 pub struct Member {
     /// Unique member id
     #[serde(rename = "_id")]

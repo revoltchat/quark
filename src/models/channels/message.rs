@@ -85,6 +85,7 @@ pub struct Masquerade {
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialMessage"]
+#[opt_skip_serializing_none]
 pub struct Message {
     /// Unique Id
     #[serde(rename = "_id")]

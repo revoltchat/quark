@@ -92,6 +92,7 @@ pub struct BotInformation {
 #[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialUser"]
+#[opt_skip_serializing_none]
 pub struct User {
     /// Unique Id
     #[serde(rename = "_id")]
