@@ -1,3 +1,2 @@
-pub mod channel;
-pub mod server;
+pub mod permission;
 pub mod user;

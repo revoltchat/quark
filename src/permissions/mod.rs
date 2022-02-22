@@ -9,15 +9,14 @@ pub struct PermissionCalculator<'a> {
     perspective: &'a User,
 
     user: Option<&'a User>,
-    #[allow(dead_code)]
     channel: Option<&'a Channel>,
-    #[allow(dead_code)]
     server: Option<&'a Server>,
-    #[allow(dead_code)]
     member: Option<&'a Member>,
 
     flag_known_relationship: Option<&'a RelationshipStatus>,
     flag_has_mutual_connection: bool,
+
+    held_member: Option<Member>,
 }
 
 impl<'a> PermissionCalculator<'a> {
@@ -32,6 +31,8 @@ impl<'a> PermissionCalculator<'a> {
 
             flag_known_relationship: None,
             flag_has_mutual_connection: false,
+
+            held_member: None,
         }
     }
 
@@ -42,11 +43,19 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    pub fn user_opt(self, user: Option<&'a User>) -> PermissionCalculator {
+        PermissionCalculator { user, ..self }
+    }
+
     pub fn channel(self, channel: &'a Channel) -> PermissionCalculator {
         PermissionCalculator {
             channel: Some(channel),
             ..self
         }
+    }
+
+    pub fn channel_opt(self, channel: Option<&'a Channel>) -> PermissionCalculator {
+        PermissionCalculator { channel, ..self }
     }
 
     pub fn server(self, server: &'a Server) -> PermissionCalculator {
@@ -75,6 +84,18 @@ impl<'a> PermissionCalculator<'a> {
         PermissionCalculator {
             flag_known_relationship: Some(relationship),
             ..self
+        }
+    }
+
+    pub fn store_member(&mut self, member: Member) {
+        self.held_member = Some(member);
+    }
+
+    pub fn member_as_ref(&self) -> Option<&Member> {
+        if let Some(stored) = &self.held_member {
+            Some(stored)
+        } else {
+            self.member
         }
     }
 }

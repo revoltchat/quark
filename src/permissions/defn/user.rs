@@ -1,7 +1,8 @@
 use num_enum::TryFromPrimitive;
+use serde::{Deserialize, Serialize};
 use std::ops;
 
-#[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
 #[repr(u32)]
 pub enum UserPermission {
     Access = 1 << 0,

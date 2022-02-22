@@ -37,9 +37,9 @@ impl Cache {
                     .channel(channel)
                     .member_opt(member)
                     .server_opt(server)
-                    .calc_channel(db)
+                    .calc(db)
                     .await
-                    .get_view()
+                    .can_view_channel()
             }
             _ => true,
         }

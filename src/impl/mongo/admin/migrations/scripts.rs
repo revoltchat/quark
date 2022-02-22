@@ -6,10 +6,7 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    models::server::PermissionTuple, r#impl::mongo::MongoDb, DEFAULT_PERMISSION_CHANNEL_SERVER,
-    DEFAULT_SERVER_PERMISSION,
-};
+use crate::r#impl::mongo::MongoDb;
 
 #[derive(Serialize, Deserialize)]
 struct MigrationInfo {
@@ -165,14 +162,11 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
 
         #[derive(Serialize)]
         struct Server {
-            pub default_permissions: PermissionTuple,
+            pub default_permissions: (i32, i32),
         }
 
         let server = Server {
-            default_permissions: (
-                *DEFAULT_SERVER_PERMISSION as i32,
-                *DEFAULT_PERMISSION_CHANNEL_SERVER as i32,
-            ),
+            default_permissions: (0_i32, 0_i32),
         };
 
         db.col::<Document>("servers")

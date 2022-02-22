@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use validator::ValidationErrors;
 
-use crate::UserPermission;
+use crate::{Permission, UserPermission};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
@@ -63,7 +63,10 @@ pub enum Error {
     },
     InternalError,
     MissingPermission {
-        permission: i32,
+        permission: Permission,
+    },
+    MissingUserPermission {
+        permission: UserPermission,
     },
     InvalidOperation,
     InvalidCredentials,
@@ -79,10 +82,12 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn from_permission<T>(permission: UserPermission) -> Result<T> {
-        Err(Error::MissingPermission {
-            permission: permission as u32 as i32,
-        })
+    pub fn from_permission<T>(permission: Permission) -> Result<T> {
+        Err(Error::MissingPermission { permission })
+    }
+
+    pub fn from_user_permission<T>(permission: UserPermission) -> Result<T> {
+        Err(Error::MissingUserPermission { permission })
     }
 
     pub fn from_invalid<T>(validation_error: ValidationErrors) -> Result<T> {
@@ -145,6 +150,7 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::DatabaseError { .. } => Status::InternalServerError,
             Error::InternalError => Status::InternalServerError,
             Error::MissingPermission { .. } => Status::Forbidden,
+            Error::MissingUserPermission { .. } => Status::Forbidden,
             Error::InvalidOperation => Status::BadRequest,
             Error::InvalidCredentials => Status::Forbidden,
             Error::InvalidSession => Status::Forbidden,
