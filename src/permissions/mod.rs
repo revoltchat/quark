@@ -1,4 +1,7 @@
-use crate::models::{user::RelationshipStatus, Channel, Member, Server, User};
+use crate::{
+    models::{user::RelationshipStatus, Channel, Member, Server, User},
+    Database, Error, Permission, Result,
+};
 
 pub mod defn;
 pub mod r#impl;
@@ -17,6 +20,9 @@ pub struct PermissionCalculator<'a> {
     flag_has_mutual_connection: bool,
 
     held_member: Option<Member>,
+
+    cached_user_permission: Option<u32>,
+    cached_permission: Option<u64>,
 }
 
 impl<'a> PermissionCalculator<'a> {
@@ -33,6 +39,9 @@ impl<'a> PermissionCalculator<'a> {
             flag_has_mutual_connection: false,
 
             held_member: None,
+
+            cached_user_permission: None,
+            cached_permission: None,
         }
     }
 
@@ -97,6 +106,33 @@ impl<'a> PermissionCalculator<'a> {
         } else {
             self.member
         }
+    }
+
+    pub async fn has_permission(&mut self, db: &Database, permission: Permission) -> Result<bool> {
+        let perms = if let Some(perms) = self.cached_permission {
+            perms
+        } else {
+            self.calc(db).await?.0[0]
+        };
+
+        Ok((permission as u64) & perms != 0)
+    }
+
+    pub async fn throw_permission(&mut self, db: &Database, permission: Permission) -> Result<()> {
+        if self.has_permission(db, permission).await? {
+            Ok(())
+        } else {
+            Error::from_permission(permission)
+        }
+    }
+
+    pub async fn throw_permission_and_view_channel(
+        &mut self,
+        db: &Database,
+        permission: Permission,
+    ) -> Result<()> {
+        self.throw_permission(db, Permission::ViewChannel).await?;
+        self.throw_permission(db, permission).await
     }
 }
 

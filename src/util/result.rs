@@ -83,11 +83,19 @@ pub enum Error {
 
 impl Error {
     pub fn from_permission<T>(permission: Permission) -> Result<T> {
-        Err(Error::MissingPermission { permission })
+        Err(if let Permission::ViewChannel = permission {
+            Error::NotFound
+        } else {
+            Error::MissingPermission { permission }
+        })
     }
 
     pub fn from_user_permission<T>(permission: UserPermission) -> Result<T> {
-        Err(Error::MissingUserPermission { permission })
+        Err(if let UserPermission::Access = permission {
+            Error::NotFound
+        } else {
+            Error::MissingUserPermission { permission }
+        })
     }
 
     pub fn from_invalid<T>(validation_error: ValidationErrors) -> Result<T> {

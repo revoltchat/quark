@@ -15,9 +15,11 @@ pub enum Permission {
     ManageChannel = 1 << 0,
     /// Manage the server
     ManageServer = 1 << 1,
+    /// Manage permissions on servers or channels
+    ManagePermissions = 1 << 2,
     /// Manage roles on server
     /// Requires 'AssignRoles' permission
-    ManageRole = (1 << 2) & (1 << 9),
+    ManageRole = (1 << 3) & (1 << 9),
 
     // % 3 bits reserved
 
@@ -110,13 +112,15 @@ lazy_static! {
 }
 
 bitfield! {
+    #[derive(Default)]
     pub struct Permissions(MSB0 [u64]);
     u64;
 
     // * Server permissions
     pub can_manage_channel, _: 63;
     pub can_manage_server, _: 62;
-    pub can_manage_roles, _: 61;
+    pub can_manage_permissions, _: 61;
+    pub can_manage_roles, _: 60;
 
     // * Member permissions
     pub can_kick_members, _: 57;

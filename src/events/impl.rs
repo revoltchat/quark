@@ -39,6 +39,7 @@ impl Cache {
                     .server_opt(server)
                     .calc(db)
                     .await
+                    .unwrap_or_default()
                     .can_view_channel()
             }
             _ => true,

@@ -23,7 +23,9 @@ impl PermissionCalculator<'_> {
     /// 5. Return no permissions
     pub async fn calc_user(&mut self, db: &crate::Database) -> UserPerms {
         if let Some(user) = self.user {
-            UserPermissions([calculate_permission(self, db, user).await])
+            let v = calculate_permission(self, db, user).await;
+            self.cached_user_permission = Some(v);
+            UserPermissions([v])
         } else {
             panic!("Expected `PermissionCalculator.user` to exist.")
         }
