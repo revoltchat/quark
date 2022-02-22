@@ -2,7 +2,7 @@ use crate::{
     events::client::EventV1,
     models::{
         server_member::{FieldsMember, PartialMember},
-        Member,
+        Member, ServerBan,
     },
     Database, Result,
 };
@@ -60,6 +60,18 @@ impl Member {
         .await;
 
         Ok(())
+    }
+
+    /// Ban member from server
+    pub async fn ban(self, db: &Database, reason: Option<String>) -> Result<ServerBan> {
+        let ban = ServerBan {
+            id: self.id.clone(),
+            reason,
+        };
+
+        self.delete(db).await?;
+        db.insert_ban(&ban).await?;
+        Ok(ban)
     }
 
     pub fn remove(&mut self, field: &FieldsMember) {
