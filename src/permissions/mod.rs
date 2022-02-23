@@ -1,6 +1,6 @@
 use crate::{
     models::{user::RelationshipStatus, Channel, Member, Server, User},
-    Database, Error, Permission, Result,
+    Database, Error, Override, Permission, Result,
 };
 
 pub mod defn;
@@ -118,11 +118,47 @@ impl<'a> PermissionCalculator<'a> {
         self.has_permission_value(db, permission as u64).await
     }
 
+    pub async fn throw_permission_value(&mut self, db: &Database, value: u64) -> Result<()> {
+        if self.has_permission_value(db, value).await? {
+            Ok(())
+        } else {
+            Err(Error::CannotGiveMissingPermissions)
+        }
+    }
+
     pub async fn throw_permission(&mut self, db: &Database, permission: Permission) -> Result<()> {
         if self.has_permission(db, permission).await? {
             Ok(())
         } else {
             Error::from_permission(permission)
+        }
+    }
+
+    /// Throw an error if we cannot grant permissions on either allows or denies
+    /// going from the previous given value to the next given value.
+    ///
+    /// We need to check any:
+    /// - allows added (permissions now granted)
+    /// - denies removed (permissions now neutral or granted)
+    pub async fn throw_permission_override<C>(
+        &mut self,
+        db: &Database,
+        current_value: C,
+        next_value: Override,
+    ) -> Result<()>
+    where
+        C: Into<Option<Override>>,
+    {
+        let current_value = current_value.into();
+
+        if let Some(current_value) = current_value {
+            self.throw_permission_value(db, !current_value.allows() & next_value.allows())
+                .await?;
+
+            self.throw_permission_value(db, current_value.denies() & !next_value.denies())
+                .await
+        } else {
+            self.throw_permission_value(db, next_value.allows()).await
         }
     }
 
