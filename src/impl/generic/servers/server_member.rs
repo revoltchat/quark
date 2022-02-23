@@ -4,12 +4,16 @@ use crate::{
         server_member::{FieldsMember, PartialMember},
         Member, Server, ServerBan,
     },
-    Database, Result,
+    Database, Error, Result,
 };
 
 impl Member {
     /// Create a member
     pub async fn create(&self, db: &Database) -> Result<()> {
+        if db.fetch_ban(&self.id.server, &self.id.user).await.is_ok() {
+            return Err(Error::Banned);
+        }
+
         db.insert_member(self).await?;
 
         EventV1::ServerMemberJoin {
