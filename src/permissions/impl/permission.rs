@@ -130,40 +130,44 @@ async fn calculate_channel_permission(
             role_permissions,
             ..
         } => {
-            // 2. Apply default allows and denies for channel.
-            if let Some(default) = default_permissions {
-                permissions.apply((*default).into());
-            }
-
-            // 3. Resolve each role in order.
-            let member = data.member.get().unwrap();
-            let member_roles: HashSet<&String> = if let Some(roles) = member.roles.as_ref() {
-                roles.iter().collect()
-            } else {
-                HashSet::new()
-            };
-
-            if !member_roles.is_empty() {
-                let server = data.server.get().unwrap();
-                let mut roles = role_permissions
-                    .iter()
-                    .filter(|(id, _)| member_roles.contains(id))
-                    .map(|(id, permission)| {
-                        let role = server.roles.get(id).expect("Role on server object");
-                        let v: Override = (*permission).into();
-                        (v.rank(role.rank), v)
-                    })
-                    .collect::<Vec<(i64, Override)>>();
-
-                roles.sort_by(|a, b| b.0.cmp(&a.0));
-
-                // 4. Apply allows and denies from roles.
-                for (_, v) in roles {
-                    permissions.apply(v);
+            // 2. If server owner, just grant all permissions.
+            if let Some(member) = data.member.get() {
+                // 3. Apply default allows and denies for channel.
+                if let Some(default) = default_permissions {
+                    permissions.apply((*default).into());
                 }
-            }
 
-            permissions
+                // 4. Resolve each role in order.
+                let member_roles: HashSet<&String> = if let Some(roles) = member.roles.as_ref() {
+                    roles.iter().collect()
+                } else {
+                    HashSet::new()
+                };
+
+                if !member_roles.is_empty() {
+                    let server = data.server.get().unwrap();
+                    let mut roles = role_permissions
+                        .iter()
+                        .filter(|(id, _)| member_roles.contains(id))
+                        .map(|(id, permission)| {
+                            let role = server.roles.get(id).expect("Role on server object");
+                            let v: Override = (*permission).into();
+                            (v.rank(role.rank), v)
+                        })
+                        .collect::<Vec<(i64, Override)>>();
+
+                    roles.sort_by(|a, b| b.0.cmp(&a.0));
+
+                    // 5. Apply allows and denies from roles.
+                    for (_, v) in roles {
+                        permissions.apply(v);
+                    }
+                }
+
+                permissions
+            } else {
+                (Permission::GrantAllSafe as u64).into()
+            }
         }
     };
 
