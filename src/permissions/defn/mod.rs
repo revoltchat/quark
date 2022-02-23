@@ -36,7 +36,7 @@ impl PermissionValue {
 }
 
 /// Representation of a single permission override
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Copy)]
 pub struct Override {
     /// Allow bit flags
     allow: u64,
@@ -69,6 +69,7 @@ pub struct OverrideField {
     /// Disallow bit flags
     d: i64,
     /// Ranking of this override
+    #[serde(skip_serializing_if = "Option::is_none")]
     r: Option<i64>,
 }
 
