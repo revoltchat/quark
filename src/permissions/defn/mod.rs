@@ -50,6 +50,14 @@ impl Override {
     pub fn rank(&self, rank: i64) -> i64 {
         self.rank.unwrap_or(rank)
     }
+
+    pub fn allows(&self) -> u64 {
+        self.allow
+    }
+
+    pub fn denies(&self) -> u64 {
+        self.deny
+    }
 }
 
 /// Representation of a single permission override

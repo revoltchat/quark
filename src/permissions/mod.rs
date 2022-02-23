@@ -104,14 +104,18 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
-    pub async fn has_permission(&mut self, db: &Database, permission: Permission) -> Result<bool> {
+    pub async fn has_permission_value(&mut self, db: &Database, value: u64) -> Result<bool> {
         let perms = if let Some(perms) = self.cached_permission {
             perms
         } else {
             self.calc(db).await?.0[0]
         };
 
-        Ok((permission as u64) & perms == (permission as u64))
+        Ok((value) & perms == (value))
+    }
+
+    pub async fn has_permission(&mut self, db: &Database, permission: Permission) -> Result<bool> {
+        self.has_permission_value(db, permission as u64).await
     }
 
     pub async fn throw_permission(&mut self, db: &Database, permission: Permission) -> Result<()> {
