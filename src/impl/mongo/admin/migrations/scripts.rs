@@ -1,3 +1,6 @@
+use std::time::Duration;
+
+use bson::Bson;
 use futures::StreamExt;
 use log::info;
 use mongodb::{
@@ -6,7 +9,7 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::r#impl::mongo::MongoDb;
+use crate::{r#impl::mongo::MongoDb, DEFAULT_PERMISSION_SERVER};
 
 #[derive(Serialize, Deserialize)]
 struct MigrationInfo {
@@ -14,7 +17,7 @@ struct MigrationInfo {
     revision: i32,
 }
 
-pub const LATEST_REVISION: i32 = 13;
+pub const LATEST_REVISION: i32 = 14;
 
 pub async fn migrate_database(db: &MongoDb) {
     let migrations = db.col::<Document>("migrations");
@@ -467,6 +470,63 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             )
             .await
             .expect("Failed to create message index.");
+    }
+
+    if revision <= 13 {
+        info!("Running migration [revision 13 / 22-02-2022]: Wipe legacy permission values.");
+
+        warn!("This is a destructive operation and will wipe existing permission data.");
+        warn!("Taking a backup is advised.");
+        warn!("Continuing in 10 seconds...");
+        async_std::task::sleep(Duration::from_secs(1)).await;
+
+        let servers = db.col::<Document>("servers");
+        let mut cursor = servers.find(doc! {}, None).await.unwrap();
+
+        while let Some(Ok(mut document)) = cursor.next().await {
+            let id = document.get_str("_id").unwrap().to_string();
+            info!("Updating server {id}");
+
+            let mut update = doc! {};
+            update.insert("default_permissions", *DEFAULT_PERMISSION_SERVER as i64);
+
+            if let Some(Bson::Document(mut roles)) = document.remove("roles") {
+                for role in roles.keys().cloned().collect::<Vec<String>>() {
+                    if let Some(Bson::Document(role)) = roles.get_mut(role) {
+                        role.insert(
+                            "permissions",
+                            doc! {
+                                "a": 0_i64,
+                                "d": 0_i64,
+                                "r": 0_i32,
+                            },
+                        );
+                    }
+                }
+
+                update.insert("roles", roles);
+            }
+
+            servers
+                .update_one(doc! { "_id": id }, doc! { "$set": update }, None)
+                .await
+                .unwrap();
+        }
+
+        db.col::<Document>("channels")
+            .update_many(
+                doc! {},
+                doc! {
+                    "$unset": {
+                        "permissions": 1_i32,
+                        "default_permissions": 1_i32,
+                        "role_permissions": 1_i32,
+                    }
+                },
+                None,
+            )
+            .await
+            .unwrap();
     }
 
     // Need to migrate fields on attachments, change `user_id`, `object_id`, etc to `parent`.

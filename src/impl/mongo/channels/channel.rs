@@ -4,7 +4,7 @@ use bson::{Bson, Document};
 
 use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
 use crate::r#impl::mongo::IntoDocumentPath;
-use crate::{AbstractChannel, AbstractServer, Error, Result};
+use crate::{AbstractChannel, AbstractServer, Error, OverrideField, Result};
 
 use super::super::MongoDb;
 
@@ -254,14 +254,14 @@ impl AbstractChannel for MongoDb {
         &self,
         channel: &str,
         role: &str,
-        permissions: u32,
+        permissions: OverrideField,
     ) -> Result<()> {
         self.col::<Document>(COL)
             .update_one(
                 doc! { "_id": channel },
                 doc! {
                     "$set": {
-                        "role_permissions.".to_owned() + role: permissions as i32
+                        "role_permissions.".to_owned() + role: permissions
                     }
                 },
                 None,

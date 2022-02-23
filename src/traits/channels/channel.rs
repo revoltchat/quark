@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
-use crate::Result;
+use crate::{OverrideField, Result};
 
 #[async_trait]
 pub trait AbstractChannel: Sync + Send {
@@ -50,7 +50,7 @@ pub trait AbstractChannel: Sync + Send {
         &self,
         channel: &str,
         role: &str,
-        permissions: u32,
+        permissions: OverrideField,
     ) -> Result<()>;
 
     /// Validate existence of channels

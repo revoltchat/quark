@@ -22,8 +22,8 @@ impl PermissionCalculator<'_> {
     ///     - If so: return `Access` + `ViewProfile`
     /// 5. Return no permissions
     pub async fn calc_user(&mut self, db: &crate::Database) -> UserPerms {
-        if let Some(user) = self.user {
-            let v = calculate_permission(self, db, user).await;
+        if self.user.has() {
+            let v = calculate_permission(self, db).await;
             self.cached_user_permission = Some(v);
             UserPermissions([v])
         } else {
@@ -48,11 +48,9 @@ pub fn get_relationship(a: &User, b: &str) -> RelationshipStatus {
 }
 
 /// Internal helper function for calculating permission
-async fn calculate_permission(
-    data: &mut PermissionCalculator<'_>,
-    db: &crate::Database,
-    user: &User,
-) -> u32 {
+async fn calculate_permission(data: &mut PermissionCalculator<'_>, db: &crate::Database) -> u32 {
+    let user = data.user.get().unwrap();
+
     if data.perspective.id == user.id {
         return u32::MAX;
     }

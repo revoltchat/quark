@@ -1,7 +1,7 @@
 use crate::models::server::{
     FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
 };
-use crate::{AbstractServer, Result};
+use crate::{AbstractServer, Result, DEFAULT_PERMISSION_SERVER};
 
 use super::super::DummyDb;
 
@@ -20,7 +20,7 @@ impl AbstractServer for DummyDb {
             system_messages: None,
 
             roles: std::collections::HashMap::new(),
-            default_permissions: (u16::MAX as i32, u16::MAX as i32),
+            default_permissions: *DEFAULT_PERMISSION_SERVER as i64,
 
             icon: None,
             banner: None,

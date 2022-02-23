@@ -33,14 +33,17 @@ impl Cache {
                     .map(|(_, x)| x)
                     .find(|x| &x.id == server);
 
-                perms(self.users.get(&self.user_id).unwrap())
-                    .channel(channel)
-                    .member_opt(member)
-                    .server_opt(server)
-                    .calc(db)
-                    .await
-                    .unwrap_or_default()
-                    .can_view_channel()
+                let mut perms = perms(self.users.get(&self.user_id).unwrap()).channel(channel);
+
+                if let Some(member) = member {
+                    perms.member.set_ref(member);
+                }
+
+                if let Some(server) = server {
+                    perms.server.set_ref(server);
+                }
+
+                perms.calc(db).await.unwrap_or_default().can_view_channel()
             }
             _ => true,
         }

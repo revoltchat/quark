@@ -8,18 +8,44 @@ pub mod r#impl;
 
 pub use r#impl::user::get_relationship;
 
+pub enum Value<'a, T> {
+    Owned(T),
+    Ref(&'a T),
+    None,
+}
+
+impl<'a, T> Value<'a, T> {
+    pub fn has(&self) -> bool {
+        !matches!(self, Self::None)
+    }
+
+    pub fn get(&self) -> Option<&T> {
+        match self {
+            Self::Owned(t) => Some(t),
+            Self::Ref(t) => Some(t),
+            Self::None => None,
+        }
+    }
+
+    pub fn set(&mut self, t: T) {
+        *self = Value::Owned(t);
+    }
+
+    pub fn set_ref(&mut self, t: &'a T) {
+        *self = Value::Ref(t);
+    }
+}
+
 pub struct PermissionCalculator<'a> {
     perspective: &'a User,
 
-    user: Option<&'a User>,
-    channel: Option<&'a Channel>,
-    server: Option<&'a Server>,
-    member: Option<&'a Member>,
+    pub user: Value<'a, User>,
+    pub channel: Value<'a, Channel>,
+    pub server: Value<'a, Server>,
+    pub member: Value<'a, Member>,
 
     flag_known_relationship: Option<&'a RelationshipStatus>,
     flag_has_mutual_connection: bool,
-
-    held_member: Option<Member>,
 
     cached_user_permission: Option<u32>,
     cached_permission: Option<u64>,
@@ -30,15 +56,13 @@ impl<'a> PermissionCalculator<'a> {
         PermissionCalculator {
             perspective,
 
-            user: None,
-            channel: None,
-            server: None,
-            member: None,
+            user: Value::None,
+            channel: Value::None,
+            server: Value::None,
+            member: Value::None,
 
             flag_known_relationship: None,
             flag_has_mutual_connection: false,
-
-            held_member: None,
 
             cached_user_permission: None,
             cached_permission: None,
@@ -47,64 +71,36 @@ impl<'a> PermissionCalculator<'a> {
 
     pub fn user(self, user: &'a User) -> PermissionCalculator {
         PermissionCalculator {
-            user: Some(user),
+            user: Value::Ref(user),
             ..self
         }
-    }
-
-    pub fn user_opt(self, user: Option<&'a User>) -> PermissionCalculator {
-        PermissionCalculator { user, ..self }
     }
 
     pub fn channel(self, channel: &'a Channel) -> PermissionCalculator {
         PermissionCalculator {
-            channel: Some(channel),
+            channel: Value::Ref(channel),
             ..self
         }
-    }
-
-    pub fn channel_opt(self, channel: Option<&'a Channel>) -> PermissionCalculator {
-        PermissionCalculator { channel, ..self }
     }
 
     pub fn server(self, server: &'a Server) -> PermissionCalculator {
         PermissionCalculator {
-            server: Some(server),
+            server: Value::Ref(server),
             ..self
         }
-    }
-
-    pub fn server_opt(self, server: Option<&'a Server>) -> PermissionCalculator {
-        PermissionCalculator { server, ..self }
     }
 
     pub fn member(self, member: &'a Member) -> PermissionCalculator {
         PermissionCalculator {
-            member: Some(member),
+            member: Value::Ref(member),
             ..self
         }
-    }
-
-    pub fn member_opt(self, member: Option<&'a Member>) -> PermissionCalculator {
-        PermissionCalculator { member, ..self }
     }
 
     pub fn with_relationship(self, relationship: &'a RelationshipStatus) -> PermissionCalculator {
         PermissionCalculator {
             flag_known_relationship: Some(relationship),
             ..self
-        }
-    }
-
-    pub fn store_member(&mut self, member: Member) {
-        self.held_member = Some(member);
-    }
-
-    pub fn member_as_ref(&self) -> Option<&Member> {
-        if let Some(stored) = &self.held_member {
-            Some(stored)
-        } else {
-            self.member
         }
     }
 
@@ -115,7 +111,7 @@ impl<'a> PermissionCalculator<'a> {
             self.calc(db).await?.0[0]
         };
 
-        Ok((permission as u64) & perms != 0)
+        Ok((permission as u64) & perms == (permission as u64))
     }
 
     pub async fn throw_permission(&mut self, db: &Database, permission: Permission) -> Result<()> {

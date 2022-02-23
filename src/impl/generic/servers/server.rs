@@ -4,12 +4,11 @@ use crate::{
     events::client::EventV1,
     models::{
         server::{
-            FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role,
-            SystemMessageChannels,
+            FieldsRole, FieldsServer, PartialRole, PartialServer, Role, SystemMessageChannels,
         },
         Server,
     },
-    Database, Error, Result,
+    Database, Error, OverrideField, Result,
 };
 
 impl Role {
@@ -150,7 +149,7 @@ impl Server {
         &mut self,
         db: &Database,
         role_id: &str,
-        permissions: &PermissionTuple,
+        permissions: OverrideField,
     ) -> Result<()> {
         if let Some(role) = self.roles.get_mut(role_id) {
             role.update(
@@ -158,7 +157,7 @@ impl Server {
                 &self.id,
                 role_id,
                 PartialRole {
-                    permissions: Some(*permissions),
+                    permissions: Some(permissions),
                     ..Default::default()
                 },
                 vec![],

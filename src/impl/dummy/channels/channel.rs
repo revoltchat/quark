@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::models::channel::{Channel, FieldsChannel, PartialChannel};
-use crate::{AbstractAttachment, AbstractChannel, Error, Result};
+use crate::{AbstractAttachment, AbstractChannel, Error, OverrideField, Result};
 
 use super::super::DummyDb;
 
@@ -74,9 +74,9 @@ impl AbstractChannel for DummyDb {
         &self,
         channel: &str,
         role: &str,
-        permissions: u32,
+        permissions: OverrideField,
     ) -> Result<()> {
-        info!("Updating permissions for role {role} in {channel} with {permissions}");
+        info!("Updating permissions for role {role} in {channel} with {permissions:?}");
         Ok(())
     }
 

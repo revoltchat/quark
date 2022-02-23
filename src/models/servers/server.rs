@@ -4,7 +4,7 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::models::attachment::File;
+use crate::{models::attachment::File, OverrideField};
 
 pub type PermissionTuple = (
     i32, // server permission
@@ -22,7 +22,7 @@ pub fn if_false(t: &bool) -> bool {
 #[opt_skip_serializing_none]
 pub struct Role {
     pub name: String,
-    pub permissions: PermissionTuple,
+    pub permissions: OverrideField,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub colour: Option<String>,
     #[serde(skip_serializing_if = "if_false", default)]
@@ -98,7 +98,7 @@ pub struct Server {
     #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
     pub roles: HashMap<String, Role>,
     /// Default set of server and channel permissions
-    pub default_permissions: PermissionTuple,
+    pub default_permissions: i64,
 
     /// Icon attachment
     #[serde(skip_serializing_if = "Option::is_none")]

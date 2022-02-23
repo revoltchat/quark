@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::models::attachment::File;
+use crate::{models::attachment::File, OverrideField};
 
 /// Utility function to check if a boolean value is false
 pub fn if_false(t: &bool) -> bool {
@@ -61,7 +61,7 @@ pub enum Channel {
         /// Permissions assigned to members of this group
         /// (does not apply to the owner of the group)
         #[serde(skip_serializing_if = "Option::is_none")]
-        permissions: Option<i32>,
+        permissions: Option<i64>,
 
         /// Whether this group is marked as not safe for work
         #[serde(skip_serializing_if = "if_false", default)]
@@ -90,10 +90,10 @@ pub enum Channel {
 
         /// Default permissions assigned to users in this channel
         #[serde(skip_serializing_if = "Option::is_none")]
-        default_permissions: Option<i32>,
+        default_permissions: Option<OverrideField>,
         /// Permissions assigned based on role to this channel
         #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
-        role_permissions: HashMap<String, i32>,
+        role_permissions: HashMap<String, OverrideField>,
 
         /// Whether this channel is marked as not safe for work
         #[serde(skip_serializing_if = "if_false", default)]
@@ -118,10 +118,10 @@ pub enum Channel {
 
         /// Default permissions assigned to users in this channel
         #[serde(skip_serializing_if = "Option::is_none")]
-        default_permissions: Option<i32>,
+        default_permissions: Option<OverrideField>,
         /// Permissions assigned based on role to this channel
         #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
-        role_permissions: HashMap<String, i32>,
+        role_permissions: HashMap<String, OverrideField>,
 
         /// Whether this channel is marked as not safe for work
         #[serde(skip_serializing_if = "if_false", default)]
@@ -144,11 +144,11 @@ pub struct PartialChannel {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub permissions: Option<i32>,
+    pub permissions: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub role_permissions: Option<HashMap<String, i32>>,
+    pub role_permissions: Option<HashMap<String, OverrideField>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_permissions: Option<i32>,
+    pub default_permissions: Option<OverrideField>,
 }
 
 /// Optional fields on channel object

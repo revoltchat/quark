@@ -5,7 +5,7 @@ use crate::{
         message::{Content, SystemMessage},
         Channel, Message,
     },
-    Database, Error, Result,
+    Database, Error, OverrideField, Result,
 };
 
 impl Channel {
@@ -307,7 +307,7 @@ impl Channel {
         &mut self,
         db: &Database,
         role: &str,
-        permissions: u32,
+        permissions: OverrideField,
     ) -> Result<()> {
         match self {
             Channel::TextChannel {
@@ -323,7 +323,7 @@ impl Channel {
                 db.set_channel_role_permission(id, role, permissions)
                     .await?;
 
-                role_permissions.insert(role.to_string(), permissions as i32);
+                role_permissions.insert(role.to_string(), permissions);
 
                 EventV1::ChannelUpdate {
                     id: id.clone(),
