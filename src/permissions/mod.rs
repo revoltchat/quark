@@ -130,6 +130,12 @@ impl<'a> PermissionCalculator<'a> {
         self.throw_permission(db, Permission::ViewChannel).await?;
         self.throw_permission(db, permission).await
     }
+
+    pub fn get_member_rank(&self) -> Option<i64> {
+        self.member
+            .get()
+            .map(|member| member.get_ranking(self.server.get().unwrap()))
+    }
 }
 
 pub fn perms(perspective: &'_ User) -> PermissionCalculator<'_> {

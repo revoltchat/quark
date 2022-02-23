@@ -2,7 +2,7 @@ use crate::{
     events::client::EventV1,
     models::{
         server_member::{FieldsMember, PartialMember},
-        Member, ServerBan,
+        Member, Server, ServerBan,
     },
     Database, Result,
 };
@@ -72,6 +72,24 @@ impl Member {
         self.delete(db).await?;
         db.insert_ban(&ban).await?;
         Ok(ban)
+    }
+
+    /// Get this user's current ranking
+    pub fn get_ranking(&self, server: &Server) -> i64 {
+        if let Some(roles) = &self.roles {
+            let mut value = i64::MAX;
+            for role in roles {
+                if let Some(role) = server.roles.get(role) {
+                    if role.rank < value {
+                        value = role.rank;
+                    }
+                }
+            }
+
+            value
+        } else {
+            0
+        }
     }
 
     pub fn remove(&mut self, field: &FieldsMember) {

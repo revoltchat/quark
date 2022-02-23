@@ -56,18 +56,21 @@ pub enum Error {
     IsBot,
     BotIsPrivate,
 
-    // ? General errors.
-    DatabaseError {
-        operation: &'static str,
-        with: &'static str,
-    },
-    InternalError,
+    // ? Permission errors.
     MissingPermission {
         permission: Permission,
     },
     MissingUserPermission {
         permission: UserPermission,
     },
+    NotElevated,
+
+    // ? General errors.
+    DatabaseError {
+        operation: &'static str,
+        with: &'static str,
+    },
+    InternalError,
     InvalidOperation,
     InvalidCredentials,
     InvalidSession,
@@ -155,10 +158,12 @@ impl<'r> Responder<'r, 'static> for Error {
             Error::IsBot => Status::BadRequest,
             Error::BotIsPrivate => Status::Forbidden,
 
-            Error::DatabaseError { .. } => Status::InternalServerError,
-            Error::InternalError => Status::InternalServerError,
             Error::MissingPermission { .. } => Status::Forbidden,
             Error::MissingUserPermission { .. } => Status::Forbidden,
+            Error::NotElevated => Status::Forbidden,
+
+            Error::DatabaseError { .. } => Status::InternalServerError,
+            Error::InternalError => Status::InternalServerError,
             Error::InvalidOperation => Status::BadRequest,
             Error::InvalidCredentials => Status::Forbidden,
             Error::InvalidSession => Status::Forbidden,
