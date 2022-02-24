@@ -72,7 +72,10 @@ impl Channel {
             data: partial,
             clear: remove,
         }
-        .p(id)
+        .p(match self {
+            Self::TextChannel { server, .. } | Self::VoiceChannel { server, .. } => server.clone(),
+            _ => id,
+        })
         .await;
 
         Ok(())
@@ -312,11 +315,13 @@ impl Channel {
         match self {
             Channel::TextChannel {
                 id,
+                server,
                 role_permissions,
                 ..
             }
             | Channel::VoiceChannel {
                 id,
+                server,
                 role_permissions,
                 ..
             } => {
@@ -333,7 +338,7 @@ impl Channel {
                     },
                     clear: vec![],
                 }
-                .p(id.clone())
+                .p(server.clone())
                 .await;
 
                 Ok(())

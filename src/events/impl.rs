@@ -9,7 +9,7 @@ use crate::{
     },
     perms,
     presence::presence_filter_online,
-    Database, Result,
+    Database, Permission, Result,
 };
 
 use super::{
@@ -27,12 +27,7 @@ impl Cache {
                     .map(|(_, x)| x)
                     .find(|x| &x.id.server == server);
 
-                let server = self
-                    .servers
-                    .iter()
-                    .map(|(_, x)| x)
-                    .find(|x| &x.id == server);
-
+                let server = self.servers.get(server);
                 let mut perms = perms(self.users.get(&self.user_id).unwrap()).channel(channel);
 
                 if let Some(member) = member {
@@ -43,7 +38,10 @@ impl Cache {
                     perms.server.set_ref(server);
                 }
 
-                perms.calc(db).await.unwrap_or_default().can_view_channel()
+                perms
+                    .has_permission(db, Permission::ViewChannel)
+                    .await
+                    .unwrap_or_default()
             }
             _ => true,
         }
@@ -120,6 +118,9 @@ impl State {
         let mut channels = db.find_direct_messages(&user.id).await?;
         channels.append(&mut db.fetch_channels(&channel_ids).await?);
 
+        // Filter server channels by permission.
+        let channels = self.cache.filter_accessible_channels(db, channels).await;
+
         // Append known user IDs from DMs.
         for channel in &channels {
             match channel {
@@ -161,9 +162,6 @@ impl State {
             .map(|x| (x.id.server.clone(), x))
             .collect();
 
-        // Filter server channels by permission.
-        let channels = self.cache.filter_accessible_channels(db, channels).await;
-
         // Make all users appear from our perspective.
         let mut users: Vec<User> = users
             .into_iter()
@@ -200,7 +198,7 @@ impl State {
         })
     }
 
-    pub async fn recalculate_server(&mut self, db: &Database, id: &str) {
+    pub async fn recalculate_server(&mut self, db: &Database, id: &str, event: &mut EventV1) {
         if let Some(server) = self.cache.servers.get(id) {
             let mut channel_ids = HashSet::new();
             let mut added_channels = vec![];
@@ -226,12 +224,17 @@ impl State {
 
             let known_ids = server.channels.iter().cloned().collect::<HashSet<String>>();
 
+            let mut bulk_events = vec![];
+
             for id in added_channels {
                 self.insert_subscription(id);
             }
 
             for id in removed_channels {
                 self.remove_subscription(&id);
+                self.cache.channels.remove(&id);
+
+                bulk_events.push(EventV1::ChannelDelete { id });
             }
 
             // * NOTE: currently all channels should be cached
@@ -243,19 +246,26 @@ impl State {
 
             if !unknowns.is_empty() {
                 if let Ok(channels) = db.fetch_channels(&unknowns).await {
-                    // ! FIXME: unnecessary clone
-                    for channel in &channels {
-                        self.cache
-                            .channels
-                            .insert(channel.id().to_string(), channel.clone());
-                    }
-
                     let viewable_channels =
                         self.cache.filter_accessible_channels(db, channels).await;
 
                     for channel in viewable_channels {
+                        self.cache
+                            .channels
+                            .insert(channel.id().to_string(), channel.clone());
+
                         self.insert_subscription(channel.id().to_string());
+                        bulk_events.push(EventV1::ChannelCreate(channel));
                     }
+                }
+            }
+
+            if !bulk_events.is_empty() {
+                let mut new_event = EventV1::Bulk { v: bulk_events };
+                std::mem::swap(&mut new_event, event);
+
+                if let EventV1::Bulk { v } = event {
+                    v.push(new_event);
                 }
             }
         }
@@ -294,6 +304,14 @@ impl State {
             return false;
         }
 
+        // An event may trigger recalculation of an entire server's permission.
+        // Keep track of whether we need to do anything.
+        let mut queue_server = None;
+
+        // It may also need to sub or unsub a single value.
+        let mut queue_add = None;
+        let mut queue_remove = None;
+
         match event {
             EventV1::ChannelCreate(channel) => {
                 let id = channel.id().to_string();
@@ -303,6 +321,12 @@ impl State {
             EventV1::ChannelUpdate {
                 id, data, clear, ..
             } => {
+                let could_view: bool = if let Some(channel) = self.cache.channels.get(id) {
+                    self.cache.can_view_channel(db, channel).await
+                } else {
+                    true
+                };
+
                 if let Some(channel) = self.cache.channels.get_mut(id) {
                     for field in clear {
                         channel.remove(field);
@@ -312,8 +336,15 @@ impl State {
                 }
 
                 if let Some(channel) = self.cache.channels.get(id) {
-                    if !self.cache.can_view_channel(db, channel).await {
-                        *event = EventV1::ChannelDelete { id: id.clone() };
+                    let can_view = self.cache.can_view_channel(db, channel).await;
+                    if could_view != can_view {
+                        if can_view {
+                            queue_add = Some(id.clone());
+                            *event = EventV1::ChannelCreate(channel.clone());
+                        } else {
+                            queue_remove = Some(id.clone());
+                            *event = EventV1::ChannelDelete { id: id.clone() };
+                        }
                     }
                 }
             }
@@ -342,7 +373,7 @@ impl State {
                 }
 
                 if data.default_permissions.is_some() {
-                    self.recalculate_server(db, id).await;
+                    queue_server = Some(id.clone());
                 }
             }
             EventV1::ServerMemberJoin { id, user } => {
@@ -351,7 +382,7 @@ impl State {
                 if user == &self.cache.user_id && self.cache.servers.get(id).is_none() {
                     if let Ok(server) = db.fetch_server(id).await {
                         self.cache.servers.insert(id.to_string(), server);
-                        self.recalculate_server(db, id).await;
+                        queue_server = Some(id.clone());
                     }
                 }
             }
@@ -388,7 +419,7 @@ impl State {
                     }
 
                     if data.roles.is_some() || clear.contains(&FieldsMember::Roles) {
-                        self.recalculate_server(db, &id.server).await;
+                        queue_server = Some(id.server.clone());
                     }
                 }
             }
@@ -413,7 +444,7 @@ impl State {
                     if let Some(member) = self.cache.members.get(id) {
                         if let Some(roles) = &member.roles {
                             if roles.contains(role_id) {
-                                self.recalculate_server(db, id).await;
+                                queue_server = Some(id.clone());
                             }
                         }
                     }
@@ -427,11 +458,12 @@ impl State {
                 if let Some(member) = self.cache.members.get(id) {
                     if let Some(roles) = &member.roles {
                         if roles.contains(role_id) {
-                            self.recalculate_server(db, id).await;
+                            queue_server = Some(id.clone());
                         }
                     }
                 }
             }
+
             EventV1::UserRelationship { id, user, .. } => {
                 self.cache.users.insert(id.clone(), user.clone());
 
@@ -442,6 +474,20 @@ impl State {
                 }
             }
             _ => {}
+        }
+
+        // Calculate server permissions if requested.
+        if let Some(server_id) = queue_server {
+            self.recalculate_server(db, &server_id, event).await;
+        }
+
+        // Sub / unsub accordingly.
+        if let Some(id) = queue_add {
+            self.insert_subscription(id);
+        }
+
+        if let Some(id) = queue_remove {
+            self.remove_subscription(&id);
         }
 
         true

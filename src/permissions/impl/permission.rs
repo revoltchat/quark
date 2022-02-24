@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     models::Channel, permissions::PermissionCalculator, Override, Permission, PermissionValue,
     Permissions, Perms, Result, DEFAULT_PERMISSION_DIRECT_MESSAGE,
-    DEFAULT_PERMISSION_SAVED_MESSAGES,
+    DEFAULT_PERMISSION_SAVED_MESSAGES, DEFAULT_PERMISSION_VIEW_ONLY,
 };
 
 impl PermissionCalculator<'_> {
@@ -105,7 +105,26 @@ async fn calculate_channel_permission(
     // 1. Check channel type.
     let value: PermissionValue = match channel {
         Channel::SavedMessages { .. } => (*DEFAULT_PERMISSION_SAVED_MESSAGES).into(),
-        Channel::DirectMessage { .. } => (*DEFAULT_PERMISSION_DIRECT_MESSAGE).into(),
+        Channel::DirectMessage { recipients, .. } => {
+            // 2. Fetch user.
+            let other_user = recipients
+                .iter()
+                .find(|x| x != &&data.perspective.id)
+                .unwrap();
+
+            let user = db.fetch_user(other_user).await?;
+            data.user.set(user);
+
+            // 3. Calculate user permissions.
+            let perms = data.calc_user(db).await;
+
+            // 4. Check if the user can send messages.
+            if perms.get_send_message() {
+                (*DEFAULT_PERMISSION_DIRECT_MESSAGE).into()
+            } else {
+                (*DEFAULT_PERMISSION_VIEW_ONLY).into()
+            }
+        }
         Channel::Group {
             owner, permissions, ..
         } => {
@@ -131,7 +150,18 @@ async fn calculate_channel_permission(
             ..
         } => {
             // 2. If server owner, just grant all permissions.
+            //
+            // Member may be present and we need to check or
+            // we can just grant all if member is not present.
+            //
+            // In the case member isn't present, the previous
+            // step did not fetch member as we are the server owner.
             if let Some(member) = data.member.get() {
+                let server = data.server.get().unwrap();
+                if server.owner == member.id.user {
+                    return Ok((Permission::GrantAllSafe as u64).into());
+                }
+
                 // 3. Apply default allows and denies for channel.
                 if let Some(default) = default_permissions {
                     permissions.apply((*default).into());
@@ -145,7 +175,6 @@ async fn calculate_channel_permission(
                 };
 
                 if !member_roles.is_empty() {
-                    let server = data.server.get().unwrap();
                     let mut roles = role_permissions
                         .iter()
                         .filter(|(id, _)| member_roles.contains(id))
@@ -163,6 +192,8 @@ async fn calculate_channel_permission(
                         permissions.apply(v);
                     }
                 }
+
+                dbg!(&permissions);
 
                 permissions
             } else {

@@ -25,6 +25,7 @@ pub enum SubscriptionStateChange {
 #[derive(Debug, Default)]
 pub struct Cache {
     pub user_id: String,
+
     pub users: HashMap<String, User>,
     pub channels: HashMap<String, Channel>,
     pub members: HashMap<String, Member>,

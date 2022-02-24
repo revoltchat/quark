@@ -8,6 +8,7 @@ pub use user::*;
 use serde::{Deserialize, Serialize};
 
 /// Holds a permission value to manipulate.
+#[derive(Debug)]
 pub struct PermissionValue(u64);
 
 impl From<i64> for PermissionValue {

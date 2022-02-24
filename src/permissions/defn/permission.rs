@@ -21,7 +21,7 @@ pub enum Permission {
     /// Requires 'AssignRoles' permission
     ManageRole = (1 << 3) & (1 << 9),
 
-    // % 3 bits reserved
+    // % 2 bits reserved
 
     // * Member permissions
     /// Kick other members below their ranking
@@ -96,8 +96,9 @@ impl_op_ex!(+ |a: &Permission, b: &Permission| -> u64 { *a as u64 | *b as u64 })
 impl_op_ex_commutative!(+ |a: &u64, b: &Permission| -> u64 { *a | *b as u64 });
 
 lazy_static! {
-    pub static ref DEFAULT_PERMISSION: u64 = Permission::ViewChannel
-        + Permission::ReadMessageHistory
+    pub static ref DEFAULT_PERMISSION_VIEW_ONLY: u64 =
+        Permission::ViewChannel + Permission::ReadMessageHistory;
+    pub static ref DEFAULT_PERMISSION: u64 = *DEFAULT_PERMISSION_VIEW_ONLY
         + Permission::SendMessage
         + Permission::InviteOthers
         + Permission::SendEmbeds
