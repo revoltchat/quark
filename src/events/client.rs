@@ -36,6 +36,10 @@ pub enum ErrorEvent {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum EventV1 {
+    Bulk {
+        v: Vec<EventV1>,
+    },
+
     Authenticated,
     Ready {
         users: Vec<User>,
