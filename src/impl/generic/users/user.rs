@@ -186,7 +186,7 @@ impl User {
         }
 
         EventV1::UserRelationship {
-            id: self.id.clone(),
+            id: target.id.clone(),
             user: self.clone(),
             status: remote,
         }
@@ -194,7 +194,7 @@ impl User {
         .await;
 
         EventV1::UserRelationship {
-            id: target.id.clone(),
+            id: self.id.clone(),
             user: target.clone(),
             status: local.clone(),
         }

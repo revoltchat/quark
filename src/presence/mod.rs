@@ -102,7 +102,7 @@ pub async fn presence_filter_online(user_ids: &'_ [String]) -> HashSet<String> {
     }
 
     if let Ok(mut conn) = get_connection().await {
-        let data: Vec<Option<Vec<u8>>> = conn.get(user_ids).await.unwrap();
+        let data: Vec<Option<Vec<u8>>> = conn.get(user_ids).await.unwrap_or_default();
         if data.is_empty() {
             return set;
         }
