@@ -187,7 +187,7 @@ impl User {
 
         EventV1::UserRelationship {
             id: target.id.clone(),
-            user: self.clone(),
+            user: self.clone().foreign(),
             status: remote,
         }
         .p(target.id.clone())
@@ -195,7 +195,7 @@ impl User {
 
         EventV1::UserRelationship {
             id: self.id.clone(),
-            user: target.clone(),
+            user: target.clone().foreign(),
             status: local.clone(),
         }
         .p(self.id.clone())
