@@ -175,8 +175,7 @@ impl AbstractChannel for MongoDb {
             doc! {
                 "$or": [
                     {
-                        "channel_type": "DirectMessage",
-                        "active": true
+                        "channel_type": "DirectMessage"
                     },
                     {
                         "channel_type": "Group"
