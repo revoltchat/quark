@@ -133,6 +133,7 @@ pub enum EventV1 {
     UserRelationship {
         id: String,
         user: User,
+        // ! this field can be deprecated
         status: RelationshipStatus,
     },
     UserSettingsUpdate {
