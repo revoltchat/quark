@@ -10,4 +10,5 @@ Cargo.lock
 **/*.rs.bk
 
 # Database
+.minio
 .data

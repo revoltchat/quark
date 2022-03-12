@@ -6,18 +6,21 @@ services:
             - "6379:6379"
     database:
         image: mongo
-        restart: always
         ports:
             - "27017:27017"
         volumes:
             - ./.data:/data/db
-    # minio:
-    #     image: minio/minio
-    #     command: server /data
-    #     env_file: .env
-    #     volumes:
-    #         - ./data/minio:/data
-    #     restart: always
+    minio:
+        image: minio/minio
+        command: server /data
+        environment:
+            MINIO_ROOT_USER: minioautumn
+            MINIO_ROOT_PASSWORD: minioautumn
+        ports:
+            - "9050:9000"
+            - "40209:40209"
+        volumes:
+            - ./.minio:/data
     # createbuckets:
     #     image: minio/mc
     #     depends_on:
