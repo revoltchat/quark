@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Composite primary key consisting of channel and user id
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct ChannelCompositeKey {
     /// Channel Id
     pub channel: String,
@@ -10,7 +10,7 @@ pub struct ChannelCompositeKey {
 }
 
 /// Representation of the state of a channel from the perspective of a user
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct ChannelUnread {
     /// Composite key pointing to a user's view of a channel
     #[serde(rename = "_id")]

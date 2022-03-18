@@ -1,18 +1,21 @@
+use okapi::openapi3::{self, RefOr, SchemaObject};
 use rocket::{
     http::{ContentType, Status},
     response::{self, Responder},
     serde::json::serde_json::json,
     Request, Response,
 };
+use schemars::schema::Schema;
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use validator::ValidationErrors;
 
 use crate::{Permission, UserPermission};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, JsonSchema)]
 #[serde(tag = "type")]
 pub enum Error {
+    /// This error was not labeled :(
     LabelMe,
 
     // ? Onboarding related errors.
@@ -80,7 +83,7 @@ pub enum Error {
     NotFound,
     NoEffect,
     FailedValidation {
-        #[serde(skip_deserializing)]
+        #[serde(skip_serializing, skip_deserializing)]
         error: ValidationErrors,
     },
 }
@@ -185,5 +188,70 @@ impl<'r> Responder<'r, 'static> for Error {
             .header(ContentType::new("application", "json"))
             .status(status)
             .ok()
+    }
+}
+
+impl rocket_okapi::response::OpenApiResponderInner for Error {
+    fn responses(
+        gen: &mut rocket_okapi::gen::OpenApiGenerator,
+    ) -> std::result::Result<openapi3::Responses, rocket_okapi::OpenApiError> {
+        let mut content = okapi::Map::new();
+
+        let settings = schemars::gen::SchemaSettings::default().with(|s| {
+            s.option_nullable = true;
+            s.option_add_null_type = false;
+            s.definitions_path = "#/components/schemas/".to_string();
+        });
+
+        let mut schema_generator = settings.into_generator();
+        let schema = schema_generator.root_schema_for::<Error>();
+
+        let definitions = gen.schema_generator().definitions_mut();
+        for (key, value) in schema.definitions {
+            definitions.insert(key, value);
+        }
+
+        definitions.insert("Error".to_string(), Schema::Object(schema.schema));
+
+        content.insert(
+            "application/json".to_string(),
+            openapi3::MediaType {
+                schema: Some(SchemaObject {
+                    reference: Some("#/components/schemas/Error".to_string()),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        );
+
+        Ok(openapi3::Responses {
+            default: Some(openapi3::RefOr::Object(openapi3::Response {
+                content,
+                description: "An error occurred.".to_string(),
+                ..Default::default()
+            })),
+            ..Default::default()
+        })
+    }
+}
+
+impl rocket_okapi::response::OpenApiResponderInner for EmptyResponse {
+    fn responses(
+        _gen: &mut rocket_okapi::gen::OpenApiGenerator,
+    ) -> std::result::Result<openapi3::Responses, rocket_okapi::OpenApiError> {
+        let mut responses = okapi::Map::new();
+
+        responses.insert(
+            "204".to_string(),
+            RefOr::Object(openapi3::Response {
+                description: "Success".to_string(),
+                ..Default::default()
+            }),
+        );
+
+        Ok(openapi3::Responses {
+            responses,
+            ..Default::default()
+        })
     }
 }

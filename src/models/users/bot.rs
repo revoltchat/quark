@@ -6,16 +6,18 @@ pub fn if_false(t: &bool) -> bool {
 }
 
 /// Representation of a bot on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, OptionalStruct, Default)]
+#[optional_derive(Serialize, Deserialize, JsonSchema, Debug, Default, Clone)]
 #[optional_name = "PartialBot"]
 #[opt_skip_serializing_none]
+#[opt_some_priority]
 pub struct Bot {
-    /// Unique Id
-    /// Matches the user id of the bot
+    /// Bot Id
+    ///
+    /// This equals the associated bot user's id.
     #[serde(rename = "_id")]
     pub id: String,
-    /// User id of the bot owner
+    /// User Id of the bot owner
     pub owner: String,
     /// Token used to authenticate requests for this bot
     pub token: String,
@@ -34,7 +36,7 @@ pub struct Bot {
 }
 
 /// Optional fields on bot object
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, PartialEq)]
 pub enum FieldsBot {
     Token,
     InteractionsURL,

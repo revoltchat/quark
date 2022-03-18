@@ -2,13 +2,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::attachment::File;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub enum ImageSize {
     Large,
     Preview,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Image {
     pub url: String,
     pub width: isize,
@@ -16,27 +16,27 @@ pub struct Image {
     pub size: ImageSize,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Video {
     pub url: String,
     pub width: isize,
     pub height: isize,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub enum TwitchType {
     Channel,
     Video,
     Clip,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub enum BandcampType {
     Album,
     Track,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Special {
     None,
@@ -61,7 +61,7 @@ pub enum Special {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Metadata {
     #[serde(skip_serializing_if = "Option::is_none")]
     url: Option<String>,
@@ -87,7 +87,7 @@ pub struct Metadata {
     colour: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Text {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_url: Option<String>,
@@ -103,7 +103,7 @@ pub struct Text {
     pub colour: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Embed {
     Website(Metadata),

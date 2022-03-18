@@ -1,4 +1,3 @@
-use bson::DateTime;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -8,6 +7,7 @@ use rocket::FromFormField;
 use crate::{
     models::{attachment::File, Member, User},
     types::january::Embed,
+    util::date::DateTimeContainer,
 };
 
 /// Representation of a message reply before it is sent.
@@ -18,7 +18,7 @@ pub struct Reply {
 }
 
 /// Representation of a text embed before it is sent.
-#[derive(Validate, Serialize, Deserialize, Clone, Debug)]
+#[derive(Validate, Serialize, Deserialize, JsonSchema, Clone, Debug)]
 pub struct SendableEmbed {
     #[validate(length(min = 1, max = 128))]
     pub icon_url: Option<String>,
@@ -33,7 +33,7 @@ pub struct SendableEmbed {
 }
 
 /// Representation of a system event message
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum SystemMessage {
     #[serde(rename = "text")]
@@ -59,7 +59,7 @@ pub enum SystemMessage {
 }
 
 /// Untagged enum representing message content
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 #[serde(untagged)]
 pub enum Content {
     /// Message contains text content
@@ -69,7 +69,7 @@ pub enum Content {
 }
 
 /// Name and / or avatar override information
-#[derive(Serialize, Deserialize, Debug, Clone, Validate)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Validate)]
 pub struct Masquerade {
     /// Replace the display name shown on this message
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -82,10 +82,11 @@ pub struct Masquerade {
 }
 
 /// Representation of a Message on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, OptionalStruct, Default)]
+#[optional_derive(Serialize, Deserialize, JsonSchema, Debug, Default, Clone)]
 #[optional_name = "PartialMessage"]
 #[opt_skip_serializing_none]
+#[opt_some_priority]
 pub struct Message {
     /// Unique Id
     #[serde(rename = "_id")]
@@ -105,7 +106,7 @@ pub struct Message {
     pub attachments: Option<Vec<File>>,
     /// Time at which this message was last edited
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub edited: Option<DateTime>,
+    pub edited: Option<DateTimeContainer>,
     /// Attached embeds to this message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub embeds: Option<Vec<Embed>>,
@@ -121,7 +122,7 @@ pub struct Message {
 }
 
 /// Sort used for retrieving messages.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 #[cfg_attr(feature = "rocket_impl", derive(FromFormField))]
 pub enum MessageSort {
     Relevance,
@@ -136,7 +137,7 @@ impl Default for MessageSort {
 }
 
 /// Response used when multiple messages are fetched.
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(untagged)]
 pub enum BulkMessageResponse {
     JustMessages(Vec<Message>),

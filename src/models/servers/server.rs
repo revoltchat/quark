@@ -16,10 +16,11 @@ pub fn if_false(t: &bool) -> bool {
     !t
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, OptionalStruct, Default)]
+#[optional_derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Default)]
 #[optional_name = "PartialRole"]
 #[opt_skip_serializing_none]
+#[opt_some_priority]
 pub struct Role {
     pub name: String,
     pub permissions: OverrideField,
@@ -31,7 +32,7 @@ pub struct Role {
     pub rank: i64,
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Category {
     #[validate(length(min = 1, max = 32))]
     pub id: String,
@@ -40,7 +41,7 @@ pub struct Category {
     pub channels: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct SystemMessageChannels {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_joined: Option<String>,
@@ -67,10 +68,11 @@ pub enum RemoveMember {
 }
 
 /// Representation of a server on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
-#[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, OptionalStruct, Default)]
+#[optional_derive(Serialize, Deserialize, JsonSchema, Debug, Default, Clone)]
 #[optional_name = "PartialServer"]
 #[opt_skip_serializing_none]
+#[opt_some_priority]
 pub struct Server {
     /// Unique Id
     #[serde(rename = "_id")]
@@ -95,7 +97,10 @@ pub struct Server {
     pub system_messages: Option<SystemMessageChannels>,
 
     /// Roles for this server
-    #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
+    #[serde(
+        default = "HashMap::<String, Role>::new",
+        skip_serializing_if = "HashMap::<String, Role>::is_empty"
+    )]
     pub roles: HashMap<String, Role>,
     /// Default set of server and channel permissions
     pub default_permissions: i64,
@@ -123,7 +128,7 @@ pub struct Server {
 }
 
 /// Optional fields on server object
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, PartialEq, Clone)]
 pub enum FieldsServer {
     Description,
     Categories,
@@ -133,7 +138,7 @@ pub enum FieldsServer {
 }
 
 /// Optional fields on server object
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, PartialEq, Clone)]
 pub enum FieldsRole {
     Colour,
 }

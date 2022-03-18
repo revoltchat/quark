@@ -1,5 +1,8 @@
 use futures::future::join;
+use okapi::openapi3::SchemaObject;
 use rocket::request::FromParam;
+use schemars::schema::{InstanceType, Schema, SingleOrVec};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::models::{Bot, Channel, Invite, Member, Message, Server, ServerBan, User};
@@ -57,5 +60,18 @@ impl<'r> FromParam<'r> for Ref {
 
     fn from_param(param: &'r str) -> Result<Self, Self::Error> {
         Ok(Ref::from_unchecked(param.into()))
+    }
+}
+
+impl JsonSchema for Ref {
+    fn schema_name() -> String {
+        "Id".to_string()
+    }
+
+    fn json_schema(_gen: &mut schemars::gen::SchemaGenerator) -> Schema {
+        Schema::Object(SchemaObject {
+            instance_type: Some(SingleOrVec::Single(Box::new(InstanceType::String))),
+            ..Default::default()
+        })
     }
 }

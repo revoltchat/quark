@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Representation of an invite to a channel on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum Invite {
     /// Invite to a specific server channel

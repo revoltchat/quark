@@ -37,7 +37,7 @@ impl PermissionValue {
 }
 
 /// Representation of a single permission override
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, JsonSchema, Debug, Clone, Copy)]
 pub struct Override {
     /// Allow bit flags
     allow: u64,
@@ -63,7 +63,7 @@ impl Override {
 
 /// Representation of a single permission override
 /// as it appears on models and in the database
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Copy, Default)]
 pub struct OverrideField {
     /// Allow bit flags
     a: i64,

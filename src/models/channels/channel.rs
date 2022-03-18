@@ -10,7 +10,7 @@ pub fn if_false(t: &bool) -> bool {
 }
 
 /// Representation of a channel on Revolt
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 #[serde(tag = "channel_type")]
 pub enum Channel {
     /// Personal "Saved Notes" channel which allows users to save messages
@@ -92,7 +92,10 @@ pub enum Channel {
         #[serde(skip_serializing_if = "Option::is_none")]
         default_permissions: Option<OverrideField>,
         /// Permissions assigned based on role to this channel
-        #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
+        #[serde(
+            default = "HashMap::<String, OverrideField>::new",
+            skip_serializing_if = "HashMap::<String, OverrideField>::is_empty"
+        )]
         role_permissions: HashMap<String, OverrideField>,
 
         /// Whether this channel is marked as not safe for work
@@ -120,7 +123,10 @@ pub enum Channel {
         #[serde(skip_serializing_if = "Option::is_none")]
         default_permissions: Option<OverrideField>,
         /// Permissions assigned based on role to this channel
-        #[serde(default = "HashMap::new", skip_serializing_if = "HashMap::is_empty")]
+        #[serde(
+            default = "HashMap::<String, OverrideField>::new",
+            skip_serializing_if = "HashMap::<String, OverrideField>::is_empty"
+        )]
         role_permissions: HashMap<String, OverrideField>,
 
         /// Whether this channel is marked as not safe for work
@@ -129,7 +135,7 @@ pub enum Channel {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Default, Clone)]
 pub struct PartialChannel {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -152,7 +158,7 @@ pub struct PartialChannel {
 }
 
 /// Optional fields on channel object
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, PartialEq, Clone)]
 pub enum FieldsChannel {
     Description,
     Icon,

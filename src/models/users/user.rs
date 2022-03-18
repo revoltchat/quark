@@ -5,7 +5,7 @@ use validator::Validate;
 use crate::models::attachment::File;
 
 /// User's relationship with another user (or themselves)
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, PartialEq)]
 pub enum RelationshipStatus {
     None,
     User,
@@ -17,7 +17,7 @@ pub enum RelationshipStatus {
 }
 
 /// Relationship entry indicating current status with other user
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Relationship {
     #[serde(rename = "_id")]
     pub id: String,
@@ -25,7 +25,7 @@ pub struct Relationship {
 }
 
 /// Presence status
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, PartialEq)]
 pub enum Presence {
     Online,
     Idle,
@@ -34,7 +34,7 @@ pub enum Presence {
 }
 
 /// User's active status
-#[derive(Serialize, Deserialize, Debug, Clone, Validate, Default)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Validate, Default)]
 pub struct UserStatus {
     /// Custom status text
     #[validate(length(min = 1, max = 128))]
@@ -46,7 +46,7 @@ pub struct UserStatus {
 }
 
 /// User's profile
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Default)]
 pub struct UserProfile {
     /// Text content on user's profile
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -82,17 +82,18 @@ pub enum Flags {
 }
 
 /// Bot information for if the user is a bot
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct BotInformation {
     /// Id of the owner of this bot
     pub owner: String,
 }
 
 /// Representiation of a User on Revolt.
-#[derive(Serialize, Deserialize, Debug, Clone, OptionalStruct, Default)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[optional_name = "PartialUser"]
 #[opt_skip_serializing_none]
+#[opt_some_priority]
 pub struct User {
     /// Unique Id
     #[serde(rename = "_id")]
@@ -133,7 +134,7 @@ pub struct User {
 }
 
 /// Optional fields on user object
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema, Debug, PartialEq, Clone)]
 pub enum FieldsUser {
     Avatar,
     StatusText,

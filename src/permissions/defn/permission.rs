@@ -7,7 +7,9 @@ use std::ops;
 /// This should be restricted to the lower 52 bits to prevent any
 /// potential issues with Javascript. Also leave empty spaces for
 /// future permission flags to be added.
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
+#[derive(
+    Serialize, Deserialize, Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone, JsonSchema,
+)]
 #[repr(u64)]
 pub enum Permission {
     // * Generic permissions

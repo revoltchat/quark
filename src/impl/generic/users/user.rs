@@ -6,6 +6,8 @@ use crate::{perms, Database, Error, Result};
 
 use futures::try_join;
 use impl_ops::impl_op_ex_commutative;
+use rocket_okapi::gen::OpenApiGenerator;
+use rocket_okapi::request::{OpenApiFromRequest, RequestHeaderInput};
 use std::ops;
 
 impl_op_ex_commutative!(+ |a: &i32, b: &Badges| -> i32 { *a | *b as i32 });
@@ -352,5 +354,15 @@ impl<'r> FromRequest<'r> for User {
         } else {
             Outcome::Failure((Status::Forbidden, rauth::util::Error::InvalidSession))
         }
+    }
+}
+
+impl<'r> OpenApiFromRequest<'r> for User {
+    fn from_request_input(
+        _gen: &mut OpenApiGenerator,
+        _name: String,
+        _required: bool,
+    ) -> rocket_okapi::Result<RequestHeaderInput> {
+        Ok(RequestHeaderInput::None)
     }
 }
