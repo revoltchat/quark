@@ -6,6 +6,7 @@ use crate::{perms, Database, Error, Result};
 
 use futures::try_join;
 use impl_ops::impl_op_ex_commutative;
+use okapi::openapi3::{SecurityScheme, SecuritySchemeData};
 use rocket_okapi::gen::OpenApiGenerator;
 use rocket_okapi::request::{OpenApiFromRequest, RequestHeaderInput};
 use std::ops;
@@ -363,6 +364,20 @@ impl<'r> OpenApiFromRequest<'r> for User {
         _name: String,
         _required: bool,
     ) -> rocket_okapi::Result<RequestHeaderInput> {
-        Ok(RequestHeaderInput::None)
+        let mut requirements = schemars::Map::new();
+        requirements.insert("Api Key".to_owned(), vec![]);
+
+        Ok(RequestHeaderInput::Security(
+            "Api Key".to_owned(),
+            SecurityScheme {
+                data: SecuritySchemeData::ApiKey {
+                    name: "x-session-token".to_owned(),
+                    location: "header".to_owned(),
+                },
+                description: Some("Session Token".to_owned()),
+                extensions: schemars::Map::new(),
+            },
+            requirements,
+        ))
     }
 }

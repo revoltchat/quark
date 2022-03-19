@@ -10,10 +10,14 @@ use crate::{
     util::date::DateTimeContainer,
 };
 
+/// # Reply
+///
 /// Representation of a message reply before it is sent.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct Reply {
+    /// Message Id
     pub id: String,
+    /// Whether this reply should mention the message's author
     pub mention: bool,
 }
 
@@ -121,12 +125,17 @@ pub struct Message {
     pub masquerade: Option<Masquerade>,
 }
 
-/// Sort used for retrieving messages.
+/// # Message Sort
+///
+/// Sort used for retrieving messages
 #[derive(Serialize, Deserialize, JsonSchema)]
 #[cfg_attr(feature = "rocket_impl", derive(FromFormField))]
 pub enum MessageSort {
+    /// Sort by the most relevant messages
     Relevance,
+    /// Sort by the newest messages first
     Latest,
+    /// Sort by the oldest messages first
     Oldest,
 }
 
@@ -136,14 +145,22 @@ impl Default for MessageSort {
     }
 }
 
-/// Response used when multiple messages are fetched.
+/// # Bulk Message Response
+///
+/// Response used when multiple messages are fetched
 #[derive(Serialize, JsonSchema)]
 #[serde(untagged)]
 pub enum BulkMessageResponse {
-    JustMessages(Vec<Message>),
+    JustMessages(
+        /// List of messages
+        Vec<Message>,
+    ),
     MessagesAndUsers {
+        /// List of messages
         messages: Vec<Message>,
+        /// List of users
         users: Vec<User>,
+        /// List of members
         #[serde(skip_serializing_if = "Option::is_none")]
         members: Option<Vec<Member>>,
     },
