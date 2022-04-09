@@ -193,8 +193,6 @@ async fn calculate_channel_permission(
                     }
                 }
 
-                dbg!(&permissions);
-
                 permissions
             } else {
                 (Permission::GrantAllSafe as u64).into()

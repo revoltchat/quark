@@ -96,17 +96,31 @@ pub async fn presence_is_online(user_id: &str) -> bool {
 
 /// Check whether a set of users is online, returns a set of the online user IDs
 pub async fn presence_filter_online(user_ids: &'_ [String]) -> HashSet<String> {
+    // Ignore empty list immediately, to save time.
     let mut set = HashSet::new();
     if user_ids.is_empty() {
         return set;
     }
 
+    // We need to handle a special case where only one is present
+    // as for some reason or another, Redis does not like us sending
+    // a list of just one ID to the server.
+    if user_ids.len() == 1 {
+        if presence_is_online(&user_ids[0]).await {
+            set.insert(user_ids[0].to_string());
+        }
+
+        return set;
+    }
+
+    // Otherwise, go ahead as normal.
     if let Ok(mut conn) = get_connection().await {
         let data: Vec<Option<Vec<u8>>> = conn.get(user_ids).await.unwrap_or_default();
         if data.is_empty() {
             return set;
         }
 
+        // We filter known values to figure out who is online.
         for i in 0..user_ids.len() {
             if data[i].is_some() {
                 set.insert(user_ids[i].to_string());
