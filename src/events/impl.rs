@@ -361,6 +361,22 @@ impl State {
                 }
             }
 
+            EventV1::ServerCreate {
+                id,
+                server,
+                channels,
+            } => {
+                self.insert_subscription(id.clone());
+                self.cache.servers.insert(id.to_string(), server.clone());
+
+                for channel in channels {
+                    self.cache
+                        .channels
+                        .insert(channel.id().to_string(), channel.clone());
+                }
+
+                queue_server = Some(id.clone());
+            }
             EventV1::ServerUpdate {
                 id, data, clear, ..
             } => {
@@ -377,8 +393,7 @@ impl State {
                 }
             }
             EventV1::ServerMemberJoin { id, user } => {
-                // ! FIXME: create server create event
-                // which includes server and channel objects
+                self.insert_subscription(id.clone());
                 if user == &self.cache.user_id && self.cache.servers.get(id).is_none() {
                     if let Ok(server) = db.fetch_server(id).await {
                         self.cache.servers.insert(id.to_string(), server);

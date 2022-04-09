@@ -8,6 +8,7 @@ pub mod r#impl;
 
 pub use r#impl::user::get_relationship;
 
+#[derive(Clone)]
 pub enum Value<'a, T> {
     Owned(T),
     Ref(&'a T),
@@ -34,8 +35,13 @@ impl<'a, T> Value<'a, T> {
     pub fn set_ref(&mut self, t: &'a T) {
         *self = Value::Ref(t);
     }
+
+    pub fn clear(&mut self) {
+        *self = Value::None;
+    }
 }
 
+#[derive(Clone)]
 pub struct PermissionCalculator<'a> {
     perspective: &'a User,
 

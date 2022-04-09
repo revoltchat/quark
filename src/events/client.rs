@@ -93,6 +93,11 @@ pub enum EventV1 {
         message_id: String,
     },
 
+    ServerCreate {
+        id: String,
+        server: Server,
+        channels: Vec<Channel>,
+    },
     ServerUpdate {
         id: String,
         data: PartialServer,

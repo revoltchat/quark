@@ -6,9 +6,10 @@ use crate::{
         server::{
             FieldsRole, FieldsServer, PartialRole, PartialServer, Role, SystemMessageChannels,
         },
-        Server,
+        server_member::MemberCompositeKey,
+        Channel, Member, Server, User,
     },
-    Database, Error, OverrideField, Result,
+    perms, Database, Error, OverrideField, Permission, Result,
 };
 
 impl Role {
@@ -168,6 +169,63 @@ impl Server {
         } else {
             Err(Error::NotFound)
         }
+    }
+
+    /// Create a new member in a server
+    pub async fn create_member(
+        &self,
+        db: &Database,
+        user: User,
+        channels: Option<Vec<Channel>>,
+    ) -> Result<Vec<Channel>> {
+        if db.fetch_ban(&self.id, &user.id).await.is_ok() {
+            return Err(Error::Banned);
+        }
+
+        let member = Member {
+            id: MemberCompositeKey {
+                server: self.id.clone(),
+                user: user.id.clone(),
+            },
+            ..Default::default()
+        };
+
+        db.insert_member(&member).await?;
+
+        let should_fetch = channels.is_none();
+        let mut channels = channels.unwrap_or_default();
+
+        if should_fetch {
+            let perm = perms(&user).server(self).member(&member);
+            let existing_channels = db.fetch_channels(&self.channels).await?;
+            for channel in existing_channels {
+                if perm
+                    .clone()
+                    .channel(&channel)
+                    .has_permission(db, Permission::ViewChannel)
+                    .await?
+                {
+                    channels.push(channel);
+                }
+            }
+        }
+
+        EventV1::ServerCreate {
+            id: self.id.clone(),
+            server: self.clone(),
+            channels: channels.clone(),
+        }
+        .p(user.id.clone())
+        .await;
+
+        EventV1::ServerMemberJoin {
+            id: self.id.clone(),
+            user: user.id.clone(),
+        }
+        .p(self.id.clone())
+        .await;
+
+        Ok(channels)
     }
 }
 
