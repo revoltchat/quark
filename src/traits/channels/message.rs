@@ -1,4 +1,4 @@
-use crate::models::message::{Message, MessageSort, PartialMessage};
+use crate::models::message::{AppendMessage, Message, MessageSort, PartialMessage};
 use crate::Result;
 
 #[async_trait]
@@ -11,6 +11,9 @@ pub trait AbstractMessage: Sync + Send {
 
     /// Update a given message with new information
     async fn update_message(&self, id: &str, message: &PartialMessage) -> Result<()>;
+
+    /// Append information to a given message
+    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<()>;
 
     /// Delete a message from the database by its id
     async fn delete_message(&self, id: &str) -> Result<()>;

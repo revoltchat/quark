@@ -1,4 +1,4 @@
-use crate::models::message::{Content, Message, MessageSort, PartialMessage};
+use crate::models::message::{AppendMessage, Content, Message, MessageSort, PartialMessage};
 use crate::{AbstractMessage, Result};
 
 use super::super::DummyDb;
@@ -29,6 +29,11 @@ impl AbstractMessage for DummyDb {
 
     async fn update_message(&self, id: &str, message: &PartialMessage) -> Result<()> {
         info!("Update {id} with {message:?}");
+        Ok(())
+    }
+
+    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<()> {
+        info!("Append {id} with {append:?}");
         Ok(())
     }
 

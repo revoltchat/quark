@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::models::channel::{FieldsChannel, PartialChannel};
-use crate::models::message::PartialMessage;
+use crate::models::message::{AppendMessage, PartialMessage};
 use crate::models::server::{FieldsRole, FieldsServer, PartialRole, PartialServer};
 use crate::models::server_member::{FieldsMember, MemberCompositeKey, PartialMember};
 use crate::models::user::{FieldsUser, PartialUser, RelationshipStatus};
@@ -56,6 +56,11 @@ pub enum EventV1 {
         id: String,
         channel: String,
         data: PartialMessage,
+    },
+    MessageAppend {
+        id: String,
+        channel: String,
+        append: AppendMessage,
     },
     MessageDelete {
         id: String,

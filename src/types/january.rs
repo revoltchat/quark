@@ -1,6 +1,9 @@
+use linkify::{LinkFinder, LinkKind};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
-use crate::models::attachment::File;
+use crate::{models::attachment::File, Error, Result};
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub enum ImageSize {
@@ -110,4 +113,75 @@ pub enum Embed {
     Image(Image),
     Text(Text),
     None,
+}
+
+impl Embed {
+    pub async fn generate(content: String, host: &str, max_embeds: usize) -> Result<Vec<Embed>> {
+        lazy_static! {
+            static ref RE_CODE: Regex = Regex::new("```(?:.|\n)+?```|`(?:.|\n)+?`").unwrap();
+            static ref RE_IGNORED: Regex = Regex::new("(<http.+>)").unwrap();
+        }
+
+        // Ignore code blocks.
+        let content = RE_CODE.replace_all(&content, "");
+
+        // Ignore all content between angle brackets starting with http.
+        let content = RE_IGNORED.replace_all(&content, "");
+
+        let content = content
+            // Ignore quoted lines.
+            .split('\n')
+            .map(|v| {
+                if let Some(c) = v.chars().next() {
+                    if c == '>' {
+                        return "";
+                    }
+                }
+
+                v
+            })
+            .collect::<Vec<&str>>()
+            .join("\n");
+
+        let mut finder = LinkFinder::new();
+        finder.kinds(&[LinkKind::Url]);
+
+        let links: HashSet<String> = finder
+            .links(&content)
+            .take(max_embeds)
+            .map(|x| x.as_str().to_string())
+            .collect();
+
+        if links.is_empty() {
+            return Err(Error::LabelMe);
+        }
+
+        // ! FIXME: batch request to january?
+        let mut embeds: Vec<Embed> = Vec::new();
+        let client = reqwest::Client::new();
+        for link in links {
+            let result = client
+                .get(&format!("{}/embed", host))
+                .query(&[("url", link)])
+                .send()
+                .await;
+
+            if result.is_err() {
+                continue;
+            }
+
+            let response = result.unwrap();
+            if response.status().is_success() {
+                let res: Embed = response.json().await.map_err(|_| Error::InvalidOperation)?;
+                embeds.push(res);
+            }
+        }
+
+        // Prevent database update when no embeds are found.
+        if !embeds.is_empty() {
+            Ok(embeds)
+        } else {
+            Err(Error::LabelMe)
+        }
+    }
 }

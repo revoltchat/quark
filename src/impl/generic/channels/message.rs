@@ -3,7 +3,10 @@ use ulid::Ulid;
 use crate::{
     events::client::EventV1,
     models::{
-        message::{BulkMessageResponse, Content, PartialMessage, SendableEmbed, SystemMessage},
+        message::{
+            AppendMessage, BulkMessageResponse, Content, PartialMessage, SendableEmbed,
+            SystemMessage,
+        },
         Channel, Message,
     },
     types::january::{Embed, Text},
@@ -19,7 +22,7 @@ impl Message {
     }
 
     /// Update message data
-    pub async fn update<'a>(&mut self, db: &Database, partial: PartialMessage) -> Result<()> {
+    pub async fn update(&mut self, db: &Database, partial: PartialMessage) -> Result<()> {
         self.apply_options(partial.clone());
         db.update_message(&self.id, &partial).await?;
 
@@ -29,6 +32,26 @@ impl Message {
             data: partial,
         }
         .p(self.channel.clone())
+        .await;
+
+        Ok(())
+    }
+
+    /// Append message data
+    pub async fn append(
+        db: &Database,
+        id: String,
+        channel: String,
+        append: AppendMessage,
+    ) -> Result<()> {
+        db.append_message(&id, &append).await?;
+
+        EventV1::MessageAppend {
+            id,
+            channel: channel.to_string(),
+            append,
+        }
+        .p(channel)
         .await;
 
         Ok(())

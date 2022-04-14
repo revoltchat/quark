@@ -38,7 +38,7 @@ pub mod users {
     pub mod user_settings;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MongoDb(pub mongodb::Client);
 
 impl AbstractDatabase for MongoDb {}

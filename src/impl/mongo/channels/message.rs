@@ -1,8 +1,8 @@
-use bson::Document;
+use bson::{to_bson, Document};
 use futures::try_join;
 use mongodb::options::FindOptions;
 
-use crate::models::message::{Message, MessageSort, PartialMessage};
+use crate::models::message::{AppendMessage, Message, MessageSort, PartialMessage};
 use crate::r#impl::mongo::DocumentId;
 use crate::{AbstractMessage, Error, Result};
 
@@ -82,6 +82,46 @@ impl AbstractMessage for MongoDb {
     async fn update_message(&self, id: &str, message: &PartialMessage) -> Result<()> {
         self.update_one_by_id(COL, id, message, vec![], None)
             .await
+            .map(|_| ())
+    }
+
+    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<()> {
+        let mut query = doc! {};
+
+        if let Some(embeds) = &append.embeds {
+            if !embeds.is_empty() {
+                query.insert(
+                    "$push",
+                    doc! {
+                        "embeds": {
+                            "$each": to_bson(embeds)
+                                .map_err(|_| Error::DatabaseError {
+                                    operation: "to_bson",
+                                    with: "embeds"
+                                })?
+                        }
+                    },
+                );
+            }
+        }
+
+        if query.is_empty() {
+            return Ok(());
+        }
+
+        self.col::<Document>(COL)
+            .update_one(
+                doc! {
+                    "_id": id
+                },
+                query,
+                None,
+            )
+            .await
+            .map_err(|_| Error::DatabaseError {
+                operation: "update_one",
+                with: "message",
+            })
             .map(|_| ())
     }
 

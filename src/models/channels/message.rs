@@ -165,3 +165,11 @@ pub enum BulkMessageResponse {
         members: Option<Vec<Member>>,
     },
 }
+
+/// # Appended Information
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AppendMessage {
+    /// Additional embeds to include in this message
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub embeds: Option<Vec<Embed>>,
+}

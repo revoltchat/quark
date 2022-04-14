@@ -12,7 +12,7 @@ pub enum DatabaseInfo {
     MongoDbFromClient(mongodb::Client),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Database {
     Dummy(DummyDb),
     MongoDb(MongoDb),

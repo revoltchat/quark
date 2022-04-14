@@ -27,7 +27,7 @@ pub mod users {
     pub mod user_settings;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DummyDb;
 
 impl AbstractDatabase for DummyDb {}
