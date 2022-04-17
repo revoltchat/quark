@@ -17,7 +17,7 @@ pub struct PushNotification {
 }
 
 impl PushNotification {
-    pub async fn new(
+    pub fn new(
         msg: Message,
         author: User,
         channel_id: &str,

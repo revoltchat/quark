@@ -155,6 +155,8 @@ pub struct PartialChannel {
     pub role_permissions: Option<HashMap<String, OverrideField>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_permissions: Option<OverrideField>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_message_id: Option<String>,
 }
 
 /// Optional fields on channel object

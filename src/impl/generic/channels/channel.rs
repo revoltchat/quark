@@ -31,6 +31,15 @@ impl Channel {
         }
     }
 
+    /// Map out whether it is a direct DM
+    pub fn is_direct_dm(&self) -> bool {
+        if let Channel::DirectMessage { .. } = self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Create a channel
     pub async fn create(&self, db: &Database) -> Result<()> {
         db.insert_channel(self).await?;
