@@ -20,8 +20,7 @@ pub enum Permission {
     /// Manage permissions on servers or channels
     ManagePermissions = 1 << 2,
     /// Manage roles on server
-    /// Requires 'AssignRoles' permission
-    ManageRole = (1 << 3) & (1 << 9),
+    ManageRole = 1 << 3,
 
     // % 2 bits reserved
 
@@ -33,7 +32,6 @@ pub enum Permission {
     /// Timeout other members below their ranking
     TimeoutMembers = 1 << 8,
     /// Assign roles to members below their ranking
-    /// Implicitly granted by 'ManageRoles' permission
     AssignRoles = 1 << 9,
     /// Change own nickname
     ChangeNickname = 1 << 10,
