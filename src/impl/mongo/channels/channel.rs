@@ -175,20 +175,28 @@ impl AbstractChannel for MongoDb {
             doc! {
                 "$or": [
                     {
-                        "channel_type": "DirectMessage"
+                        "$or": [
+                            {
+                                "channel_type": "DirectMessage"
+                            },
+                            {
+                                "channel_type": "Group"
+                            }
+                        ],
+                        "recipients": user_id
                     },
                     {
-                        "channel_type": "Group"
+                        "channel_type": "SavedMessages",
+                        "user": user_id
                     }
-                ],
-                "recipients": user_id
+                ]
             },
         )
         .await
     }
 
     async fn find_saved_messages_channel(&self, user_id: &str) -> Result<Channel> {
-        self.find(
+        self.find_one(
             COL,
             doc! {
                 "channel_type": "SavedMessages",

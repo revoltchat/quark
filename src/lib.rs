@@ -17,6 +17,7 @@ extern crate bitfield;
 #[macro_use]
 pub extern crate bson;
 
+pub use iso8601_timestamp::Timestamp;
 pub use redis_kiss;
 
 pub mod events;

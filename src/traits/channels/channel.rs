@@ -30,13 +30,16 @@ pub trait AbstractChannel: Sync + Send {
     /// This will also delete all associated messages and files.
     async fn delete_channel(&self, channel: &Channel) -> Result<()>;
 
-    /// Find a direct messages that a user is involved in
+    /// Find all direct messages that a user is involved in
     ///
-    /// Returns both group DMs and any DMs marked as "active".
+    /// Returns group DMs, any DMs marked as "active" and saved messages.
     async fn find_direct_messages(&self, user_id: &str) -> Result<Vec<Channel>>;
 
     /// Find a direct message channel between two users
     async fn find_direct_message_channel(&self, user_a: &str, user_b: &str) -> Result<Channel>;
+
+    /// Find a saved message channel owned by a user
+    async fn find_saved_messages_channel(&self, user_id: &str) -> Result<Channel>;
 
     /// Add user to a group
     async fn add_user_to_group(&self, channel: &str, user: &str) -> Result<()>;
