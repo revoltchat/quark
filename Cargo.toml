@@ -15,6 +15,7 @@ default = [ "test" ]
 # Serialisation
 serde = { version = "1", features = ["derive"] }
 validator = { version = "0.14", features = ["derive"] }
+iso8601-timestamp = { version = "0.1.8", features = ["schema", "bson"] }
 optional_struct = { git = "https://github.com/insertish/OptionalStruct", rev = "e275d2726595474632485934aa0887fa52281f70" }
 
 # Formats

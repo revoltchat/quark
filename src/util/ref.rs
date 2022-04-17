@@ -1,7 +1,6 @@
 use futures::future::join;
-use okapi::openapi3::SchemaObject;
 use rocket::request::FromParam;
-use schemars::schema::{InstanceType, Schema, SingleOrVec};
+use schemars::schema::{InstanceType, Schema, SchemaObject, SingleOrVec};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

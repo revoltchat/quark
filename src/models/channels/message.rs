@@ -1,13 +1,14 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
+use iso8601_timestamp::Timestamp;
+
 #[cfg(feature = "rocket_impl")]
 use rocket::FromFormField;
 
 use crate::{
     models::{attachment::File, Member, User},
     types::january::Embed,
-    util::date::DateTimeContainer,
 };
 
 /// # Reply
@@ -110,7 +111,7 @@ pub struct Message {
     pub attachments: Option<Vec<File>>,
     /// Time at which this message was last edited
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub edited: Option<DateTimeContainer>,
+    pub edited: Option<Timestamp>,
     /// Attached embeds to this message
     #[serde(skip_serializing_if = "Option::is_none")]
     pub embeds: Option<Vec<Embed>>,
