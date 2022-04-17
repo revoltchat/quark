@@ -187,6 +187,17 @@ impl AbstractChannel for MongoDb {
         .await
     }
 
+    async fn find_saved_messages_channel(&self, user_id: &str) -> Result<Channel> {
+        self.find(
+            COL,
+            doc! {
+                "channel_type": "SavedMessages",
+                "user": user_id
+            },
+        )
+        .await
+    }
+
     async fn find_direct_message_channel(&self, user_a: &str, user_b: &str) -> Result<Channel> {
         self.find_one(
             COL,
