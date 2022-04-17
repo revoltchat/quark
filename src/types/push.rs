@@ -33,10 +33,10 @@ impl PushNotification {
             format!("{}/users/{}/default_avatar", api, msg.author)
         };
 
-        let image = msg.attachments.map_or(None, |attachments| {
+        let image = msg.attachments.and_then(|attachments| {
             attachments
                 .first()
-                .map_or(None, |v| Some(format!("{}/attachments/{}", autumn, v.id)))
+                .map(|v| format!("{}/attachments/{}", autumn, v.id))
         });
 
         let body = match msg.content {
