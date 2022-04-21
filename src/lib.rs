@@ -24,6 +24,7 @@ pub mod events;
 pub mod r#impl;
 pub mod models;
 pub mod presence;
+pub mod tasks;
 pub mod types;
 
 mod database;
@@ -39,6 +40,7 @@ pub use permissions::{get_relationship, perms};
 
 pub use util::r#ref::Ref;
 pub use util::result::{EmptyResponse, Error, Result};
+pub use util::variables;
 
 #[cfg(feature = "rocket_impl")]
 use rocket::State;

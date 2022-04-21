@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+
+use serde_json::json;
 use ulid::Ulid;
 
 use crate::{
@@ -7,17 +10,64 @@ use crate::{
             AppendMessage, BulkMessageResponse, Content, PartialMessage, SendableEmbed,
             SystemMessage,
         },
-        Channel, Message,
+        Channel, Message, User,
     },
-    types::january::{Embed, Text},
+    presence::presence_filter_online,
+    types::{
+        january::{Embed, Text},
+        push::PushNotification,
+    },
     Database, Result,
 };
 
 impl Message {
     /// Create a message
-    pub async fn create(&mut self, db: &Database) -> Result<()> {
+    pub async fn create(
+        &mut self,
+        db: &Database,
+        channel: &Channel,
+        sender: Option<&User>,
+    ) -> Result<()> {
         db.insert_message(self).await?;
-        EventV1::Message(self.clone()).p(self.channel.clone()).await;
+
+        // Fan out events
+        EventV1::Message(self.clone())
+            .p(channel.id().to_string())
+            .await;
+
+        // Push out Web Push notifications
+        crate::tasks::web_push::queue(
+            {
+                let mut target_ids = vec![];
+                match &channel {
+                    Channel::DirectMessage { recipients, .. }
+                    | Channel::Group { recipients, .. } => {
+                        target_ids = (&recipients.iter().cloned().collect::<HashSet<String>>()
+                            - &presence_filter_online(recipients).await)
+                            .into_iter()
+                            .collect::<Vec<String>>();
+                    }
+                    Channel::TextChannel { .. } => {
+                        if let Some(mentions) = &self.mentions {
+                            target_ids.append(&mut mentions.clone());
+                        }
+                    }
+                    _ => {}
+                };
+                target_ids
+            },
+            json!(PushNotification::new(self.clone(), sender, channel.id())).to_string(),
+        )
+        .await;
+
+        // Update last_message_id
+        crate::tasks::last_message_id::queue(
+            channel.id().to_string(),
+            self.id.to_string(),
+            channel.is_direct_dm(),
+        )
+        .await;
+
         Ok(())
     }
 

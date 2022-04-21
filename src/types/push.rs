@@ -3,6 +3,7 @@ use std::time::SystemTime;
 use serde::{Deserialize, Serialize};
 
 use crate::models::{message::Content, Message, User};
+use crate::variables::delta::{APP_URL, AUTUMN_URL, PUBLIC_URL};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PushNotification {
@@ -17,26 +18,21 @@ pub struct PushNotification {
 }
 
 impl PushNotification {
-    pub fn new(
-        msg: Message,
-        author: User,
-        channel_id: &str,
-
-        // ! FIXME: these three fields should be pulled from shared config in quark
-        autumn: &str,
-        api: &str,
-        app: &str,
-    ) -> Self {
-        let icon = if let Some(avatar) = author.avatar {
-            format!("{}/avatars/{}", autumn, avatar.id)
+    pub fn new(msg: Message, author: Option<&User>, channel_id: &str) -> Self {
+        let icon = if let Some(author) = author {
+            if let Some(avatar) = &author.avatar {
+                format!("{}/avatars/{}", &*AUTUMN_URL, avatar.id)
+            } else {
+                format!("{}/users/{}/default_avatar", &*PUBLIC_URL, msg.author)
+            }
         } else {
-            format!("{}/users/{}/default_avatar", api, msg.author)
+            format!("{}/assets/logo.png", &*APP_URL)
         };
 
         let image = msg.attachments.and_then(|attachments| {
             attachments
                 .first()
-                .map(|v| format!("{}/attachments/{}", autumn, v.id))
+                .map(|v| format!("{}/attachments/{}", &*AUTUMN_URL, v.id))
         });
 
         let body = match msg.content {
@@ -50,13 +46,15 @@ impl PushNotification {
             .as_secs();
 
         Self {
-            author: author.username,
+            author: author
+                .map(|x| x.username.to_string())
+                .unwrap_or_else(|| "Revolt".to_string()),
             icon,
             image,
             body,
             tag: channel_id.to_string(),
             timestamp,
-            url: format!("{}/channel/{}/{}", app, channel_id, msg.id),
+            url: format!("{}/channel/{}/{}", &*APP_URL, channel_id, msg.id),
         }
     }
 }
