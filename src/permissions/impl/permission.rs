@@ -126,17 +126,25 @@ async fn calculate_channel_permission(
             }
         }
         Channel::Group {
-            owner, permissions, ..
+            owner,
+            permissions,
+            recipients,
+            ..
         } => {
             // 2. Check if user is owner.
             if &data.perspective.id == owner {
                 (Permission::GrantAllSafe as u64).into()
             } else {
-                // 3. Pull out group permissions.
-                permissions
-                    .map(|x| x as u64)
-                    .unwrap_or(*DEFAULT_PERMISSION_DIRECT_MESSAGE)
-                    .into()
+                // 3. Check that we are actually in the group.
+                if recipients.contains(&data.perspective.id) {
+                    // 4. Pull out group permissions.
+                    permissions
+                        .map(|x| x as u64)
+                        .unwrap_or(*DEFAULT_PERMISSION_DIRECT_MESSAGE)
+                        .into()
+                } else {
+                    0_u64.into()
+                }
             }
         }
         Channel::TextChannel {
