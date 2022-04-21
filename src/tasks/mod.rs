@@ -7,7 +7,7 @@ use std::time::Instant;
 
 const WORKER_COUNT: usize = 5;
 
-mod ack;
+pub mod ack;
 pub mod last_message_id;
 pub mod process_embeds;
 pub mod web_push;

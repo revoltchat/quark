@@ -5,6 +5,7 @@ use crate::{
         message::SystemMessage,
         Channel,
     },
+    tasks::ack::AckEvent,
     Database, Error, OverrideField, Result,
 };
 
@@ -217,7 +218,7 @@ impl Channel {
     }
 
     /// Acknowledge a message
-    pub async fn ack(&self, db: &Database, user: &str, message: &str) -> Result<()> {
+    pub async fn ack(&self, user: &str, message: &str) -> Result<()> {
         EventV1::ChannelAck {
             id: self.id().to_string(),
             user: user.to_string(),
@@ -226,7 +227,16 @@ impl Channel {
         .p(user.to_string())
         .await;
 
-        db.acknowledge_message(self.id(), user, message).await
+        crate::tasks::ack::queue(
+            self.id().to_string(),
+            user.to_string(),
+            AckEvent::AckMessage {
+                id: message.to_string(),
+            },
+        )
+        .await;
+
+        Ok(())
     }
 
     /// Add user to a group

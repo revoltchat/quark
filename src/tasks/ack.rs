@@ -62,6 +62,8 @@ pub async fn worker(db: Database) {
                     }
                 } {
                     error!("{err:?} for {event:?}. ({user}, {channel})");
+                } else {
+                    info!("User {user} ack in {channel} with {event:?}");
                 }
             }
         }

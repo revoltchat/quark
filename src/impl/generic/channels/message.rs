@@ -12,6 +12,7 @@ use crate::{
         Channel, Message, User,
     },
     presence::presence_filter_online,
+    tasks::ack::AckEvent,
     types::{
         january::{Embed, Text},
         push::PushNotification,
@@ -39,6 +40,20 @@ impl Message {
             is_direct_dm,
         )
         .await;
+
+        // Add mentions for affected users
+        if let Some(mentions) = &self.mentions {
+            for user in mentions {
+                crate::tasks::ack::queue(
+                    channel.to_string(),
+                    user.to_string(),
+                    AckEvent::AddMention {
+                        ids: vec![self.id.to_string()],
+                    },
+                )
+                .await;
+            }
+        }
 
         Ok(())
     }
