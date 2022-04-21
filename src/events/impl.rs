@@ -355,8 +355,10 @@ impl State {
             EventV1::ChannelGroupJoin { user, .. } => {
                 self.insert_subscription(user.clone());
             }
-            EventV1::ChannelGroupLeave { user, .. } => {
-                if !self.cache.can_subscribe_to_user(user) {
+            EventV1::ChannelGroupLeave { id, user, .. } => {
+                if user == &self.cache.user_id {
+                    self.remove_subscription(id);
+                } else if !self.cache.can_subscribe_to_user(user) {
                     self.remove_subscription(user);
                 }
             }
@@ -392,14 +394,8 @@ impl State {
                     queue_server = Some(id.clone());
                 }
             }
-            EventV1::ServerMemberJoin { id, user } => {
-                self.insert_subscription(id.clone());
-                if user == &self.cache.user_id && self.cache.servers.get(id).is_none() {
-                    if let Ok(server) = db.fetch_server(id).await {
-                        self.cache.servers.insert(id.to_string(), server);
-                        queue_server = Some(id.clone());
-                    }
-                }
+            EventV1::ServerMemberJoin { .. } => {
+                // We will always receive ServerCreate when joining a new server.
             }
             EventV1::ServerMemberLeave { id, user } => {
                 if user == &self.cache.user_id {
