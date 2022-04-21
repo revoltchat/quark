@@ -2,8 +2,8 @@ use crate::{
     events::client::EventV1,
     models::{
         channel::{FieldsChannel, PartialChannel},
-        message::{Content, SystemMessage},
-        Channel, Message,
+        message::SystemMessage,
+        Channel,
     },
     Database, Error, OverrideField, Result,
 };
@@ -33,11 +33,7 @@ impl Channel {
 
     /// Map out whether it is a direct DM
     pub fn is_direct_dm(&self) -> bool {
-        if let Channel::DirectMessage { .. } = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Channel::DirectMessage { .. })
     }
 
     /// Create a channel
@@ -234,8 +230,12 @@ impl Channel {
     }
 
     /// Add user to a group
-    pub async fn add_user_to_group(&self, db: &Database, user: &str, by: &str) -> Result<()> {
-        match self {
+    pub async fn add_user_to_group(&mut self, db: &Database, user: &str, by: &str) -> Result<()> {
+        if let Channel::Group { recipients, .. } = self {
+            recipients.push(user.to_string());
+        }
+
+        match &self {
             Channel::Group { id, .. } => {
                 db.add_user_to_group(id, user).await?;
 
@@ -246,14 +246,16 @@ impl Channel {
                 .p(id.to_string())
                 .await;
 
-                Message::send_as_system(
-                    db,
-                    id,
-                    Content::SystemMessage(SystemMessage::UserAdded {
-                        id: user.to_string(),
-                        by: by.to_string(),
-                    }),
-                )
+                EventV1::ChannelCreate(self.clone())
+                    .p(user.to_string())
+                    .await;
+
+                SystemMessage::UserAdded {
+                    id: user.to_string(),
+                    by: by.to_string(),
+                }
+                .into_message(id.to_string())
+                .create(db, self, None)
                 .await
                 .ok();
 
@@ -298,13 +300,11 @@ impl Channel {
                 .p(id.to_string())
                 .await;
 
-                Message::send_as_system(
-                    db,
-                    id,
-                    Content::SystemMessage(SystemMessage::UserLeft {
-                        id: user.to_string(),
-                    }),
-                )
+                SystemMessage::UserLeft {
+                    id: user.to_string(),
+                }
+                .into_message(id.to_string())
+                .create(db, self, None)
                 .await
                 .ok();
 

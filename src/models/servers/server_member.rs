@@ -41,3 +41,10 @@ pub enum FieldsMember {
     Avatar,
     Roles,
 }
+
+/// Member removal intention
+pub enum RemovalIntention {
+    Leave,
+    Kick,
+    Ban,
+}

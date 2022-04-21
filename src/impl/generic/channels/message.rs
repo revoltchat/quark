@@ -22,18 +22,37 @@ use crate::{
 
 impl Message {
     /// Create a message
+    pub async fn create_no_web_push(
+        &mut self,
+        db: &Database,
+        channel: &str,
+        is_direct_dm: bool,
+    ) -> Result<()> {
+        db.insert_message(self).await?;
+
+        // Fan out events
+        EventV1::Message(self.clone()).p(channel.to_string()).await;
+
+        // Update last_message_id
+        crate::tasks::last_message_id::queue(
+            channel.to_string(),
+            self.id.to_string(),
+            is_direct_dm,
+        )
+        .await;
+
+        Ok(())
+    }
+
+    /// Create a message and Web Push events
     pub async fn create(
         &mut self,
         db: &Database,
         channel: &Channel,
         sender: Option<&User>,
     ) -> Result<()> {
-        db.insert_message(self).await?;
-
-        // Fan out events
-        EventV1::Message(self.clone())
-            .p(channel.id().to_string())
-            .await;
+        self.create_no_web_push(db, channel.id(), channel.is_direct_dm())
+            .await?;
 
         // Push out Web Push notifications
         crate::tasks::web_push::queue(
@@ -57,14 +76,6 @@ impl Message {
                 target_ids
             },
             json!(PushNotification::new(self.clone(), sender, channel.id())).to_string(),
-        )
-        .await;
-
-        // Update last_message_id
-        crate::tasks::last_message_id::queue(
-            channel.id().to_string(),
-            self.id.to_string(),
-            channel.is_direct_dm(),
         )
         .await;
 
@@ -118,21 +129,6 @@ impl Message {
         .await;
         Ok(())
     }
-
-    // Send a message as the system
-    pub async fn send_as_system(db: &Database, channel: &str, content: Content) -> Result<()> {
-        let message = Message {
-            id: Ulid::new().to_string(),
-            channel: channel.to_string(),
-            author: "00000000000000000000000000".to_string(),
-
-            content,
-
-            ..Default::default()
-        };
-
-        db.insert_message(&message).await
-    }
 }
 
 pub trait IntoUsers {
@@ -173,6 +169,19 @@ impl IntoUsers for Vec<Message> {
         }
 
         ids
+    }
+}
+
+impl SystemMessage {
+    pub fn into_message(self, channel: String) -> Message {
+        Message {
+            id: Ulid::new().to_string(),
+            channel,
+            author: "00000000000000000000000000".to_string(),
+            content: Content::SystemMessage(self),
+
+            ..Default::default()
+        }
     }
 }
 

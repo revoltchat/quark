@@ -2,7 +2,7 @@ use crate::{
     events::client::EventV1,
     models::{
         server_member::{FieldsMember, PartialMember},
-        Member, Server, ServerBan,
+        Member, Server,
     },
     Database, Result,
 };
@@ -32,32 +32,6 @@ impl Member {
         .await;
 
         Ok(())
-    }
-
-    /// Delete member data
-    pub async fn delete(self, db: &Database) -> Result<()> {
-        db.delete_member(&self.id).await?;
-
-        EventV1::ServerMemberLeave {
-            id: self.id.server.clone(),
-            user: self.id.user,
-        }
-        .p(self.id.server)
-        .await;
-
-        Ok(())
-    }
-
-    /// Ban member from server
-    pub async fn ban(self, db: &Database, reason: Option<String>) -> Result<ServerBan> {
-        let ban = ServerBan {
-            id: self.id.clone(),
-            reason,
-        };
-
-        self.delete(db).await?;
-        db.insert_ban(&ban).await?;
-        Ok(ban)
     }
 
     /// Get this user's current ranking
