@@ -313,10 +313,10 @@ impl User {
 
     /// Check whether this user has another user blocked
     pub fn has_blocked(&self, user: &str) -> bool {
-        match get_relationship(self, user) {
-            RelationshipStatus::Blocked | RelationshipStatus::BlockedOther => true,
-            _ => false,
-        }
+        matches!(
+            get_relationship(self, user),
+            RelationshipStatus::Blocked | RelationshipStatus::BlockedOther
+        )
     }
 }
 
@@ -361,7 +361,7 @@ impl<'r> FromRequest<'r> for User {
         if let Some(user) = user {
             Outcome::Success(user.clone())
         } else {
-            Outcome::Failure((Status::Forbidden, rauth::util::Error::InvalidSession))
+            Outcome::Failure((Status::Unauthorized, rauth::util::Error::InvalidSession))
         }
     }
 }
