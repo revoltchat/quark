@@ -2,7 +2,7 @@ use std::time::SystemTime;
 
 use serde::{Deserialize, Serialize};
 
-use crate::models::{message::Content, Message, User};
+use crate::models::{Message, User};
 use crate::variables::delta::{APP_URL, AUTUMN_URL, PUBLIC_URL};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -35,9 +35,12 @@ impl PushNotification {
                 .map(|v| format!("{}/attachments/{}", &*AUTUMN_URL, v.id))
         });
 
-        let body = match msg.content {
-            Content::Text(body) => body,
-            Content::SystemMessage(sys_msg) => sys_msg.into(),
+        let body = if let Some(sys) = msg.system {
+            sys.into()
+        } else if let Some(text) = msg.content {
+            text
+        } else {
+            "Empty Message".to_string()
         };
 
         let timestamp = SystemTime::now()

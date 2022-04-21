@@ -7,8 +7,7 @@ use crate::{
     events::client::EventV1,
     models::{
         message::{
-            AppendMessage, BulkMessageResponse, Content, PartialMessage, SendableEmbed,
-            SystemMessage,
+            AppendMessage, BulkMessageResponse, PartialMessage, SendableEmbed, SystemMessage,
         },
         Channel, Message, User,
     },
@@ -139,7 +138,7 @@ impl IntoUsers for Message {
     fn get_user_ids(&self) -> Vec<String> {
         let mut ids = vec![self.author.clone()];
 
-        if let Content::SystemMessage(msg) = &self.content {
+        if let Some(msg) = &self.system {
             match msg {
                 SystemMessage::UserAdded { id, by, .. }
                 | SystemMessage::UserRemove { id, by, .. } => {
@@ -178,7 +177,7 @@ impl SystemMessage {
             id: Ulid::new().to_string(),
             channel,
             author: "00000000000000000000000000".to_string(),
-            content: Content::SystemMessage(self),
+            system: Some(self),
 
             ..Default::default()
         }
@@ -201,12 +200,6 @@ impl From<SystemMessage> for String {
             }
             SystemMessage::ChannelIconChanged { .. } => "Channel icon changed.".to_string(),
         }
-    }
-}
-
-impl Default for Content {
-    fn default() -> Content {
-        Content::Text("".into())
     }
 }
 

@@ -63,16 +63,6 @@ pub enum SystemMessage {
     ChannelIconChanged { by: String },
 }
 
-/// Untagged enum representing message content
-#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
-#[serde(untagged)]
-pub enum Content {
-    /// Message contains text content
-    Text(String),
-    /// Message is a system event
-    SystemMessage(SystemMessage),
-}
-
 /// Name and / or avatar override information
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Validate)]
 pub struct Masquerade {
@@ -105,7 +95,11 @@ pub struct Message {
     pub author: String,
 
     /// Message content
-    pub content: Content,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
+    /// System message
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub system: Option<SystemMessage>,
     /// Array of attachments
     #[serde(skip_serializing_if = "Option::is_none")]
     pub attachments: Option<Vec<File>>,

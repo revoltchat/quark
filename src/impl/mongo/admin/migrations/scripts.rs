@@ -17,7 +17,7 @@ struct MigrationInfo {
     revision: i32,
 }
 
-pub const LATEST_REVISION: i32 = 14;
+pub const LATEST_REVISION: i32 = 15;
 
 pub async fn migrate_database(db: &MongoDb) {
     let migrations = db.col::<Document>("migrations");
@@ -521,6 +521,27 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                         "permissions": 1_i32,
                         "default_permissions": 1_i32,
                         "role_permissions": 1_i32,
+                    }
+                },
+                None,
+            )
+            .await
+            .unwrap();
+    }
+
+    if revision <= 14 {
+        info!("Running migration [revision 14 / 21-04-2022]: Split content into content and system fields.");
+
+        db.col::<Document>("messages")
+            .update_many(
+                doc! {
+                    "content": {
+                        "$type": "object"
+                    }
+                },
+                doc! {
+                    "$rename": {
+                        "content": "system"
                     }
                 },
                 None,

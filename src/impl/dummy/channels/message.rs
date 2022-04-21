@@ -1,4 +1,4 @@
-use crate::models::message::{AppendMessage, Content, Message, MessageSort, PartialMessage};
+use crate::models::message::{AppendMessage, Message, MessageSort, PartialMessage};
 use crate::{AbstractMessage, Result};
 
 use super::super::DummyDb;
@@ -8,17 +8,11 @@ impl AbstractMessage for DummyDb {
     async fn fetch_message(&self, id: &str) -> Result<Message> {
         Ok(Message {
             id: id.into(),
-            nonce: None,
             channel: "channel".into(),
             author: "author".into(),
+            content: Some("message content".into()),
 
-            content: Content::Text("message content".into()),
-            attachments: None,
-            edited: None,
-            embeds: None,
-            mentions: None,
-            replies: None,
-            masquerade: None,
+            ..Default::default()
         })
     }
 
