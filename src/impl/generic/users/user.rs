@@ -310,6 +310,14 @@ impl User {
             _ => Err(Error::NoEffect),
         }
     }
+
+    /// Check whether this user has another user blocked
+    pub fn has_blocked(&self, user: &str) -> bool {
+        match get_relationship(self, user) {
+            RelationshipStatus::Blocked | RelationshipStatus::BlockedOther => true,
+            _ => false,
+        }
+    }
 }
 
 use rauth::entities::Session;
