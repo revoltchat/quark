@@ -299,6 +299,14 @@ impl State {
             EventV1::UserRelationship { id, .. }
             | EventV1::UserSettingsUpdate { id, .. }
             | EventV1::ChannelAck { id, .. } => id != &self.cache.user_id,
+            EventV1::ServerCreate { server, .. } => server.owner != self.cache.user_id,
+            EventV1::ChannelCreate(channel) => match channel {
+                Channel::SavedMessages { user, .. } => user != &self.cache.user_id,
+                Channel::DirectMessage { recipients, .. } | Channel::Group { recipients, .. } => {
+                    !recipients.contains(&self.cache.user_id)
+                }
+                _ => false,
+            },
             _ => false,
         } {
             return false;
