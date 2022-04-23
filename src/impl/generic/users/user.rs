@@ -318,6 +318,26 @@ impl User {
             RelationshipStatus::Blocked | RelationshipStatus::BlockedOther
         )
     }
+
+    /// Mark as deleted
+    pub async fn mark_deleted(&mut self, db: &Database) -> Result<()> {
+        self.update(
+            db,
+            PartialUser {
+                username: Some(format!("Deleted User {}", self.id)),
+                flags: Some(2),
+                ..Default::default()
+            },
+            vec![
+                FieldsUser::Avatar,
+                FieldsUser::StatusText,
+                FieldsUser::StatusPresence,
+                FieldsUser::ProfileContent,
+                FieldsUser::ProfileBackground,
+            ],
+        )
+        .await
+    }
 }
 
 use rauth::entities::Session;
