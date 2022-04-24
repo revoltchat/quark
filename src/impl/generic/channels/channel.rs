@@ -276,7 +276,12 @@ impl Channel {
     }
 
     /// Remove user from a group
-    pub async fn remove_user_from_group(&self, db: &Database, user: &str) -> Result<()> {
+    pub async fn remove_user_from_group(
+        &self,
+        db: &Database,
+        user: &str,
+        by: Option<&str>,
+    ) -> Result<()> {
         match &self {
             Channel::Group {
                 id,
@@ -310,8 +315,15 @@ impl Channel {
                 .p(id.to_string())
                 .await;
 
-                SystemMessage::UserLeft {
-                    id: user.to_string(),
+                if let Some(by) = by {
+                    SystemMessage::UserRemove {
+                        id: user.to_string(),
+                        by: by.to_string(),
+                    }
+                } else {
+                    SystemMessage::UserLeft {
+                        id: user.to_string(),
+                    }
                 }
                 .into_message(id.to_string())
                 .create(db, self, None)
