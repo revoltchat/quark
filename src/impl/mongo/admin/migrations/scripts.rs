@@ -498,7 +498,6 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                             doc! {
                                 "a": 0_i64,
                                 "d": 0_i64,
-                                "r": 0_i32,
                             },
                         );
                     }

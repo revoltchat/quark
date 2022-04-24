@@ -43,15 +43,9 @@ pub struct Override {
     allow: u64,
     /// Disallow bit flags
     deny: u64,
-    /// Ranking of this override
-    rank: Option<i64>,
 }
 
 impl Override {
-    pub fn rank(&self, rank: i64) -> i64 {
-        self.rank.unwrap_or(rank)
-    }
-
     pub fn allows(&self) -> u64 {
         self.allow
     }
@@ -69,9 +63,6 @@ pub struct OverrideField {
     a: i64,
     /// Disallow bit flags
     d: i64,
-    /// Ranking of this override
-    #[serde(skip_serializing_if = "Option::is_none")]
-    r: Option<i64>,
 }
 
 impl From<Override> for OverrideField {
@@ -79,21 +70,15 @@ impl From<Override> for OverrideField {
         Self {
             a: v.allow as i64,
             d: v.deny as i64,
-            r: v.rank,
         }
     }
 }
 
 impl From<OverrideField> for Override {
     fn from(v: OverrideField) -> Self {
-        if v.r.is_some() {
-            unimplemented!();
-        }
-
         Self {
             allow: v.a as u64,
             deny: v.d as u64,
-            rank: v.r,
         }
     }
 }
