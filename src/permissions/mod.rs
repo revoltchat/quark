@@ -1,5 +1,6 @@
 use crate::{
     models::{user::RelationshipStatus, Channel, Member, Server, User},
+    util::value::Value,
     Database, Error, Override, Permission, Result,
 };
 
@@ -8,39 +9,7 @@ pub mod r#impl;
 
 pub use r#impl::user::get_relationship;
 
-#[derive(Clone)]
-pub enum Value<'a, T> {
-    Owned(T),
-    Ref(&'a T),
-    None,
-}
-
-impl<'a, T> Value<'a, T> {
-    pub fn has(&self) -> bool {
-        !matches!(self, Self::None)
-    }
-
-    pub fn get(&self) -> Option<&T> {
-        match self {
-            Self::Owned(t) => Some(t),
-            Self::Ref(t) => Some(t),
-            Self::None => None,
-        }
-    }
-
-    pub fn set(&mut self, t: T) {
-        *self = Value::Owned(t);
-    }
-
-    pub fn set_ref(&mut self, t: &'a T) {
-        *self = Value::Ref(t);
-    }
-
-    pub fn clear(&mut self) {
-        *self = Value::None;
-    }
-}
-
+/// Permissions calculator
 #[derive(Clone)]
 pub struct PermissionCalculator<'a> {
     perspective: &'a User,
@@ -58,6 +27,7 @@ pub struct PermissionCalculator<'a> {
 }
 
 impl<'a> PermissionCalculator<'a> {
+    /// Create a new permission calculator
     pub fn new(perspective: &'a User) -> PermissionCalculator {
         PermissionCalculator {
             perspective,
@@ -75,6 +45,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Use user by ref
     pub fn user(self, user: &'a User) -> PermissionCalculator {
         PermissionCalculator {
             user: Value::Ref(user),
@@ -82,6 +53,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Use channel by ref
     pub fn channel(self, channel: &'a Channel) -> PermissionCalculator {
         PermissionCalculator {
             channel: Value::Ref(channel),
@@ -89,6 +61,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Use server by ref
     pub fn server(self, server: &'a Server) -> PermissionCalculator {
         PermissionCalculator {
             server: Value::Ref(server),
@@ -96,6 +69,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Use member by ref
     pub fn member(self, member: &'a Member) -> PermissionCalculator {
         PermissionCalculator {
             member: Value::Ref(member),
@@ -103,6 +77,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Use existing relationship by ref
     pub fn with_relationship(self, relationship: &'a RelationshipStatus) -> PermissionCalculator {
         PermissionCalculator {
             flag_known_relationship: Some(relationship),
@@ -110,6 +85,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Check whether the calculated permission contains a given value
     pub async fn has_permission_value(&mut self, db: &Database, value: u64) -> Result<bool> {
         let perms = if let Some(perms) = self.cached_permission {
             perms
@@ -120,10 +96,12 @@ impl<'a> PermissionCalculator<'a> {
         Ok((value) & perms == (value))
     }
 
+    /// Check whether we have a given permission
     pub async fn has_permission(&mut self, db: &Database, permission: Permission) -> Result<bool> {
         self.has_permission_value(db, permission as u64).await
     }
 
+    /// Check whether we have a given permission, otherwise throw an error
     pub async fn throw_permission_value(&mut self, db: &Database, value: u64) -> Result<()> {
         if self.has_permission_value(db, value).await? {
             Ok(())
@@ -132,6 +110,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Check whether we have a given permission, otherwise throw an error
     pub async fn throw_permission(&mut self, db: &Database, permission: Permission) -> Result<()> {
         if self.has_permission(db, permission).await? {
             Ok(())
@@ -168,6 +147,7 @@ impl<'a> PermissionCalculator<'a> {
         }
     }
 
+    /// Check whether we has the ViewChannel and another given permission, otherwise throw an error
     pub async fn throw_permission_and_view_channel(
         &mut self,
         db: &Database,
@@ -177,6 +157,7 @@ impl<'a> PermissionCalculator<'a> {
         self.throw_permission(db, permission).await
     }
 
+    /// Get the known member's current ranking
     pub fn get_member_rank(&self) -> Option<i64> {
         self.member
             .get()
@@ -184,6 +165,7 @@ impl<'a> PermissionCalculator<'a> {
     }
 }
 
+/// Short-hand for creating a permission calculator
 pub fn perms(perspective: &'_ User) -> PermissionCalculator<'_> {
     PermissionCalculator::new(perspective)
 }

@@ -9,7 +9,7 @@ use crate::{
 impl PermissionCalculator<'_> {
     /// Calculate the permissions from our perspective to the given server or channel
     ///
-    /// Refer to permission_hierarchy.svg for more information
+    /// Refer to https://developers.revolt.chat/stack/delta/permissions#flow-chart for more information
     pub async fn calc(&mut self, db: &crate::Database) -> Result<Perms> {
         let value = if self.channel.has() {
             calculate_channel_permission(self, db).await?

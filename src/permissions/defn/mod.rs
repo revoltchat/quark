@@ -11,31 +11,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug)]
 pub struct PermissionValue(u64);
 
-impl From<i64> for PermissionValue {
-    fn from(v: i64) -> Self {
-        Self(v as u64)
-    }
-}
-
-impl From<u64> for PermissionValue {
-    fn from(v: u64) -> Self {
-        Self(v as u64)
-    }
-}
-
-impl From<PermissionValue> for u64 {
-    fn from(v: PermissionValue) -> Self {
-        v.0
-    }
-}
-
-impl PermissionValue {
-    pub fn apply(&mut self, v: Override) {
-        self.0 |= v.allow;
-        self.0 &= !v.deny;
-    }
-}
-
 /// Representation of a single permission override
 #[derive(Deserialize, JsonSchema, Debug, Clone, Copy)]
 pub struct Override {
@@ -43,16 +18,6 @@ pub struct Override {
     allow: u64,
     /// Disallow bit flags
     deny: u64,
-}
-
-impl Override {
-    pub fn allows(&self) -> u64 {
-        self.allow
-    }
-
-    pub fn denies(&self) -> u64 {
-        self.deny
-    }
 }
 
 /// Representation of a single permission override
@@ -63,6 +28,26 @@ pub struct OverrideField {
     a: i64,
     /// Disallow bit flags
     d: i64,
+}
+
+impl Override {
+    /// Into allows
+    pub fn allows(&self) -> u64 {
+        self.allow
+    }
+
+    /// Into denies
+    pub fn denies(&self) -> u64 {
+        self.deny
+    }
+}
+
+impl PermissionValue {
+    /// Apply a given override to this value
+    pub fn apply(&mut self, v: Override) {
+        self.0 |= v.allow;
+        self.0 &= !v.deny;
+    }
 }
 
 impl From<Override> for OverrideField {
@@ -86,5 +71,23 @@ impl From<OverrideField> for Override {
 impl From<OverrideField> for Bson {
     fn from(v: OverrideField) -> Self {
         Self::Document(bson::to_document(&v).unwrap())
+    }
+}
+
+impl From<i64> for PermissionValue {
+    fn from(v: i64) -> Self {
+        Self(v as u64)
+    }
+}
+
+impl From<u64> for PermissionValue {
+    fn from(v: u64) -> Self {
+        Self(v as u64)
+    }
+}
+
+impl From<PermissionValue> for u64 {
+    fn from(v: PermissionValue) -> Self {
+        v.0
     }
 }
