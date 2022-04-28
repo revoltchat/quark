@@ -1,6 +1,4 @@
-use crate::models::server::{
-    FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
-};
+use crate::models::server::{FieldsRole, FieldsServer, PartialRole, PartialServer, Role, Server};
 use crate::Result;
 
 #[async_trait]
@@ -41,12 +39,4 @@ pub trait AbstractServer: Sync + Send {
     ///
     /// Also updates channels and members.
     async fn delete_role(&self, server_id: &str, role_id: &str) -> Result<()>;
-
-    /// Update permissions for a given role
-    async fn update_role_permission(
-        &self,
-        server_id: &str,
-        role_id: &str,
-        permissions: &PermissionTuple,
-    ) -> Result<()>;
 }

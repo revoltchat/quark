@@ -6,11 +6,6 @@ use validator::Validate;
 
 use crate::{models::attachment::File, OverrideField};
 
-pub type PermissionTuple = (
-    i32, // server permission
-    i32, // channel permission
-);
-
 /// Utility function to check if a boolean value is false
 pub fn if_false(t: &bool) -> bool {
     !t

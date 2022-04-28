@@ -1,6 +1,4 @@
-use crate::models::server::{
-    FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
-};
+use crate::models::server::{FieldsRole, FieldsServer, PartialRole, PartialServer, Role, Server};
 use crate::{AbstractServer, Result, DEFAULT_PERMISSION_SERVER};
 
 use super::super::DummyDb;
@@ -75,16 +73,6 @@ impl AbstractServer for DummyDb {
 
     async fn delete_role(&self, server_id: &str, role_id: &str) -> Result<()> {
         info!("Delete {role_id} on {server_id}");
-        Ok(())
-    }
-
-    async fn update_role_permission(
-        &self,
-        server_id: &str,
-        role_id: &str,
-        permissions: &PermissionTuple,
-    ) -> Result<()> {
-        info!("Update permission for {role_id} in {server_id} to {permissions:?}");
         Ok(())
     }
 }

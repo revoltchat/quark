@@ -1,8 +1,6 @@
 use bson::{to_document, Bson, Document};
 
-use crate::models::server::{
-    FieldsRole, FieldsServer, PartialRole, PartialServer, PermissionTuple, Role, Server,
-};
+use crate::models::server::{FieldsRole, FieldsServer, PartialRole, PartialServer, Role, Server};
 use crate::r#impl::mongo::IntoDocumentPath;
 use crate::{AbstractServer, Database, Error, Result};
 
@@ -204,33 +202,6 @@ impl AbstractServer for MongoDb {
             .map_err(|_| Error::DatabaseError {
                 operation: "update_one",
                 with: "servers",
-            })
-            .map(|_| ())
-    }
-
-    async fn update_role_permission(
-        &self,
-        server_id: &str,
-        role_id: &str,
-        permissions: &PermissionTuple,
-    ) -> Result<()> {
-        self.col::<Document>(COL)
-            .update_one(
-                doc! { "_id": server_id },
-                doc! {
-                    "$set": {
-                        "roles.".to_owned() + role_id + ".permissions": [
-                            permissions.0 as i32,
-                            permissions.1 as i32
-                        ]
-                    }
-                },
-                None,
-            )
-            .await
-            .map_err(|_| Error::DatabaseError {
-                operation: "update_one",
-                with: "server",
             })
             .map(|_| ())
     }
