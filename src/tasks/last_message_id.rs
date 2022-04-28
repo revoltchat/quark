@@ -8,15 +8,22 @@ use std::{collections::HashMap, time::Duration};
 
 use super::DelayedTask;
 
+/// Task information
 struct Data {
+    /// Channel to update
     channel: String,
+    /// Latest message ID
     id: String,
+    /// Whether the channel is a DM
     is_dm: bool,
 }
 
+/// Task information
 #[derive(Debug)]
 struct Task {
+    /// Latest message ID
     id: String,
+    /// Whether the channel is a DM
     is_dm: bool,
 }
 
@@ -24,10 +31,12 @@ lazy_static! {
     static ref Q: Queue<Data> = Queue::new(10_000);
 }
 
+/// Queue a new task for a worker
 pub async fn queue(channel: String, id: String, is_dm: bool) {
     Q.push(Data { channel, id, is_dm }).await;
 }
 
+/// Start a new worker
 pub async fn worker(db: Database) {
     let mut tasks = HashMap::<String, DelayedTask<Task>>::new();
     let mut keys = vec![];

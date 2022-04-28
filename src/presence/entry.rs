@@ -10,14 +10,23 @@ lazy_static! {
     pub static ref REGION_KEY: String = format!("region{}", &*REGION_ID);
 }
 
+/// Compact presence information for a user
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PresenceEntry {
+    /// Region this session exists in
+    ///
+    /// We can have up to 65535 regions
     pub region_id: u16,
+
+    /// Unique session ID
     pub session_id: u8,
+
+    /// Known flags about session
     pub flags: u8,
 }
 
 impl PresenceEntry {
+    /// Create a new presence entry from a given session ID and known flags
     pub fn from(session_id: u8, flags: u8) -> Self {
         Self {
             region_id: *REGION_ID,
@@ -28,11 +37,11 @@ impl PresenceEntry {
 }
 
 pub trait PresenceOp {
+    /// Find next available session ID
     fn find_next_id(&self) -> u8;
 }
 
 impl PresenceOp for Vec<PresenceEntry> {
-    /// Find next available session ID
     fn find_next_id(&self) -> u8 {
         // O(n^2) scan algorithm
         // should be relatively fast at low numbers anyways

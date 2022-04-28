@@ -9,9 +9,12 @@ use web_push::{
     WebPushMessageBuilder,
 };
 
+/// Task information
 #[derive(Debug)]
 struct PushTask {
+    /// User IDs of the targets that are to receive this notification
     recipients: Vec<String>,
+    /// Raw JSON payload to send to clients
     payload: String,
 }
 
@@ -19,6 +22,7 @@ lazy_static! {
     static ref Q: Queue<PushTask> = Queue::new(10_000);
 }
 
+/// Queue a new task for a worker
 pub async fn queue(recipients: Vec<String>, payload: String) {
     if recipients.is_empty() {
         return;
@@ -31,6 +35,7 @@ pub async fn queue(recipients: Vec<String>, payload: String) {
     .await;
 }
 
+/// Start a new worker
 pub async fn worker(db: Database) {
     let client = WebPushClient::new();
     let key = base64::decode_config(VAPID_PRIVATE_KEY.clone(), base64::URL_SAFE)

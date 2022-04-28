@@ -8,10 +8,14 @@ use crate::{
 use deadqueue::limited::Queue;
 use log::error;
 
+/// Task information
 #[derive(Debug)]
 struct EmbedTask {
+    /// Channel we're processing the event in
     channel: String,
+    /// ID of the message we're processing
     id: String,
+    /// Content of the message
     content: String,
 }
 
@@ -19,6 +23,7 @@ lazy_static! {
     static ref Q: Queue<EmbedTask> = Queue::new(10_000);
 }
 
+/// Queue a new task for a worker
 pub async fn queue(channel: String, id: String, content: String) {
     Q.push(EmbedTask {
         channel,
@@ -28,6 +33,7 @@ pub async fn queue(channel: String, id: String, content: String) {
     .await;
 }
 
+/// Start a new worker
 pub async fn worker(db: Database) {
     loop {
         let task = Q.pop().await;
