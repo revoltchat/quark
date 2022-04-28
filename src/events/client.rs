@@ -8,6 +8,7 @@ use crate::models::user::{FieldsUser, PartialUser, RelationshipStatus};
 use crate::models::{Channel, Member, Message, Server, User, UserSettings};
 use crate::Error;
 
+/// WebSocket Client Errors
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "error")]
 pub enum WebSocketError {
@@ -19,6 +20,7 @@ pub enum WebSocketError {
     MalformedData { msg: String },
 }
 
+/// Ping Packet
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum Ping {
@@ -26,6 +28,7 @@ pub enum Ping {
     Number(usize),
 }
 
+/// Untagged Error
 #[derive(Serialize)]
 #[serde(untagged)]
 pub enum ErrorEvent {
@@ -33,121 +36,135 @@ pub enum ErrorEvent {
     APIError(Error),
 }
 
+/// Protocol Events
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum EventV1 {
-    Bulk {
-        v: Vec<EventV1>,
-    },
+    /// Multiple events
+    Bulk { v: Vec<EventV1> },
 
+    /// Successfully authenticated
     Authenticated,
+
+    /// Basic data to cache
     Ready {
         users: Vec<User>,
         servers: Vec<Server>,
         channels: Vec<Channel>,
         members: Vec<Member>,
     },
-    Pong {
-        data: Ping,
-    },
 
+    /// Ping response
+    Pong { data: Ping },
+
+    /// New message
     Message(Message),
+
+    /// Update existing message
     MessageUpdate {
         id: String,
         channel: String,
         data: PartialMessage,
     },
+
+    /// Append information to existing message
     MessageAppend {
         id: String,
         channel: String,
         append: AppendMessage,
     },
-    MessageDelete {
-        id: String,
-        channel: String,
-    },
 
+    /// Delete message
+    MessageDelete { id: String, channel: String },
+
+    /// New channel
     ChannelCreate(Channel),
+
+    /// Update existing channel
     ChannelUpdate {
         id: String,
         data: PartialChannel,
         clear: Vec<FieldsChannel>,
     },
-    ChannelDelete {
-        id: String,
-    },
-    ChannelGroupJoin {
-        id: String,
-        user: String,
-    },
-    ChannelGroupLeave {
-        id: String,
-        user: String,
-    },
-    ChannelStartTyping {
-        id: String,
-        user: String,
-    },
-    ChannelStopTyping {
-        id: String,
-        user: String,
-    },
+
+    /// Delete channel
+    ChannelDelete { id: String },
+
+    /// User joins a group
+    ChannelGroupJoin { id: String, user: String },
+
+    /// User leaves a group
+    ChannelGroupLeave { id: String, user: String },
+
+    /// User started typing in a channel
+    ChannelStartTyping { id: String, user: String },
+
+    /// User stopped typing in a channel
+    ChannelStopTyping { id: String, user: String },
+
+    /// User acknowledged message in channel
     ChannelAck {
         id: String,
         user: String,
         message_id: String,
     },
 
+    /// New server
     ServerCreate {
         id: String,
         server: Server,
         channels: Vec<Channel>,
     },
+
+    /// Update existing server
     ServerUpdate {
         id: String,
         data: PartialServer,
         clear: Vec<FieldsServer>,
     },
-    ServerDelete {
-        id: String,
-    },
+
+    /// Delete server
+    ServerDelete { id: String },
+
+    /// Update existing server member
     ServerMemberUpdate {
         id: MemberCompositeKey,
         data: PartialMember,
         clear: Vec<FieldsMember>,
     },
-    ServerMemberJoin {
-        id: String,
-        user: String,
-    },
-    ServerMemberLeave {
-        id: String,
-        user: String,
-    },
+
+    /// User joins server
+    ServerMemberJoin { id: String, user: String },
+
+    /// User left server
+    ServerMemberLeave { id: String, user: String },
+
+    /// Server role created or updated
     ServerRoleUpdate {
         id: String,
         role_id: String,
         data: PartialRole,
         clear: Vec<FieldsRole>,
     },
-    ServerRoleDelete {
-        id: String,
-        role_id: String,
-    },
 
+    /// Server role deleted
+    ServerRoleDelete { id: String, role_id: String },
+
+    /// Update existing user
     UserUpdate {
         id: String,
         data: PartialUser,
         clear: Vec<FieldsUser>,
     },
+
+    /// Relationship with another user changed
     UserRelationship {
         id: String,
         user: User,
         // ! this field can be deprecated
         status: RelationshipStatus,
     },
-    UserSettingsUpdate {
-        id: String,
-        update: UserSettings,
-    },
+
+    /// Settings updated remotely
+    UserSettingsUpdate { id: String, update: UserSettings },
 }

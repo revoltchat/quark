@@ -2,9 +2,13 @@ use std::collections::{HashMap, HashSet};
 
 use crate::models::{Channel, Member, Server, User};
 
+/// Enumeration representing some change in subscriptions
 pub enum SubscriptionStateChange {
+    /// No change
     None,
+    /// Clear all subscriptions
     Reset,
+    /// Append or remove subscriptions
     Change {
         add: Vec<String>,
         remove: Vec<String>,
@@ -32,6 +36,7 @@ pub struct Cache {
     pub servers: HashMap<String, Server>,
 }
 
+/// Client state
 pub struct State {
     pub cache: Cache,
 
@@ -40,6 +45,7 @@ pub struct State {
 }
 
 impl State {
+    /// Create state from User
     pub fn from(user: User) -> State {
         let mut subscribed = HashSet::new();
         subscribed.insert(user.id.clone());
@@ -58,6 +64,7 @@ impl State {
         }
     }
 
+    /// Apply currently queued state
     pub fn apply_state(&mut self) -> SubscriptionStateChange {
         let state = std::mem::replace(&mut self.state, SubscriptionStateChange::None);
         if let SubscriptionStateChange::Change { add, remove } = &state {
@@ -73,19 +80,23 @@ impl State {
         state
     }
 
+    /// Clone the active user
     pub fn clone_user(&self) -> User {
         self.cache.users.get(&self.cache.user_id).unwrap().clone()
     }
 
+    /// Iterate through all subscriptions
     pub fn iter_subscriptions(&self) -> std::collections::hash_set::Iter<'_, std::string::String> {
         self.subscribed.iter()
     }
 
+    /// Reset the current state
     pub fn reset_state(&mut self) {
         self.state = SubscriptionStateChange::Reset;
         self.subscribed.clear();
     }
 
+    /// Add a new subscription
     pub fn insert_subscription(&mut self, subscription: String) {
         if self.subscribed.contains(&subscription) {
             return;
@@ -107,6 +118,7 @@ impl State {
         self.subscribed.insert(subscription);
     }
 
+    /// Remove existing subscription
     pub fn remove_subscription(&mut self, subscription: &str) {
         if !self.subscribed.contains(&subscription.to_string()) {
             return;

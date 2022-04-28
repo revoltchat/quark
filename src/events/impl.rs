@@ -17,7 +17,9 @@ use super::{
     state::{Cache, State},
 };
 
+/// Cache Manager
 impl Cache {
+    /// Check whether the current user can view a channel
     pub async fn can_view_channel(&self, db: &Database, channel: &Channel) -> bool {
         match &channel {
             Channel::TextChannel { server, .. } | Channel::VoiceChannel { server, .. } => {
@@ -47,6 +49,7 @@ impl Cache {
         }
     }
 
+    /// Filter a given vector of channels to only include the ones we can access
     pub async fn filter_accessible_channels(
         &self,
         db: &Database,
@@ -62,6 +65,7 @@ impl Cache {
         viewable_channels
     }
 
+    /// Check whether we can subscribe to another user
     pub fn can_subscribe_to_user(&self, user_id: &str) -> bool {
         if let Some(user) = self.users.get(&self.user_id) {
             match get_relationship(user, user_id) {
@@ -92,7 +96,9 @@ impl Cache {
     }
 }
 
+/// State Manager
 impl State {
+    /// Generate a Ready packet for the current user
     pub async fn generate_ready_payload(&mut self, db: &Database) -> Result<EventV1> {
         let mut user = self.clone_user();
 
@@ -198,6 +204,7 @@ impl State {
         })
     }
 
+    /// Re-determine the currently accessible server channels
     pub async fn recalculate_server(&mut self, db: &Database, id: &str, event: &mut EventV1) {
         if let Some(server) = self.cache.servers.get(id) {
             let mut channel_ids = HashSet::new();
@@ -271,6 +278,7 @@ impl State {
         }
     }
 
+    /// Push presence change to the user and all associated server topics
     pub async fn broadcast_presence_change(&self, target: bool) {
         if if let Some(status) = &self.cache.users.get(&self.cache.user_id).unwrap().status {
             status.presence != Some(Presence::Invisible)
@@ -294,6 +302,7 @@ impl State {
         }
     }
 
+    /// Handle an incoming event for protocol version 1
     pub async fn handle_incoming_event_v1(&mut self, db: &Database, event: &mut EventV1) -> bool {
         if match event {
             EventV1::UserRelationship { id, .. }
@@ -514,6 +523,7 @@ impl State {
 }
 
 impl EventV1 {
+    /// Publish helper wrapper
     pub async fn p(self, channel: String) {
         #[cfg(not(debug_assertions))]
         redis_kiss::p(channel, self).await;
