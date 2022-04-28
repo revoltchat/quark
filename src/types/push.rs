@@ -5,19 +5,28 @@ use serde::{Deserialize, Serialize};
 use crate::models::{Message, User};
 use crate::variables::delta::{APP_URL, AUTUMN_URL, PUBLIC_URL};
 
+/// Push Notification
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PushNotification {
+    /// Known author name
     pub author: String,
+    /// URL to author avatar
     pub icon: String,
+    /// URL to first matching attachment
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
+    /// Message content or system message information
     pub body: String,
+    /// Unique tag, usually the channel ID
     pub tag: String,
+    /// Timestamp at which this notification was created
     pub timestamp: u64,
+    /// URL to open when clicking notification
     pub url: String,
 }
 
 impl PushNotification {
+    /// Create a new notification from a given message, author and channel ID
     pub fn new(msg: Message, author: Option<&User>, channel_id: &str) -> Self {
         let icon = if let Some(author) = author {
             if let Some(avatar) = &author.avatar {

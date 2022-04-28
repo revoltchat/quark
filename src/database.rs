@@ -5,20 +5,29 @@ use crate::r#impl::dummy::DummyDb;
 use crate::r#impl::mongo::MongoDb;
 use crate::AbstractDatabase;
 
+/// Database information to use to create a client
 pub enum DatabaseInfo {
+    /// Auto-detect the database in use
     Auto,
+    /// Use the mock database
     Dummy,
+    /// Connect to MongoDB
     MongoDb(String),
+    /// Use existing MongoDB connection
     MongoDbFromClient(mongodb::Client),
 }
 
+/// Database
 #[derive(Debug, Clone)]
 pub enum Database {
+    /// Mock database
     Dummy(DummyDb),
+    /// MongoDB database
     MongoDb(MongoDb),
 }
 
 impl DatabaseInfo {
+    /// Create a database client from the given database information
     #[async_recursion]
     pub async fn connect(self) -> Result<Database, String> {
         Ok(match self {

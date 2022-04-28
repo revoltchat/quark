@@ -12,6 +12,7 @@ use validator::ValidationErrors;
 
 use crate::{Permission, UserPermission};
 
+/// Possible API Errors
 #[derive(Serialize, Deserialize, Debug, Clone, JsonSchema)]
 #[serde(tag = "type")]
 pub enum Error {
@@ -89,6 +90,7 @@ pub enum Error {
 }
 
 impl Error {
+    /// Create a missing permission error from a given permission
     pub fn from_permission<T>(permission: Permission) -> Result<T> {
         Err(if let Permission::ViewChannel = permission {
             Error::NotFound
@@ -97,6 +99,7 @@ impl Error {
         })
     }
 
+    /// Create a missing user permission error from a given user permission
     pub fn from_user_permission<T>(permission: UserPermission) -> Result<T> {
         Err(if let UserPermission::Access = permission {
             Error::NotFound
@@ -105,6 +108,7 @@ impl Error {
         })
     }
 
+    /// Create a failed validation error from given validation errors
     pub fn from_invalid<T>(validation_error: ValidationErrors) -> Result<T> {
         Err(Error::FailedValidation {
             error: validation_error,
@@ -112,7 +116,10 @@ impl Error {
     }
 }
 
+/// Empty 204 HTTP Response
 pub struct EmptyResponse;
+
+/// Result type with custom Error
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 // ! FIXME: #[cfg]

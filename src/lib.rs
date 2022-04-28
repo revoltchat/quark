@@ -48,6 +48,7 @@ use rocket::State;
 #[cfg(feature = "rocket_impl")]
 pub type Db = State<Database>;
 
+/// Configure logging and common Rust variables
 pub fn setup_logging() {
     dotenv::dotenv().ok();
 
