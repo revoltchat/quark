@@ -9,7 +9,7 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{r#impl::mongo::MongoDb, DEFAULT_PERMISSION_SERVER};
+use crate::{r#impl::mongo::MongoDb, Permission, DEFAULT_PERMISSION_SERVER};
 
 #[derive(Serialize, Deserialize)]
 struct MigrationInfo {
@@ -475,10 +475,10 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
     if revision <= 13 {
         info!("Running migration [revision 13 / 22-02-2022]: Wipe legacy permission values.");
 
-        warn!("This is a destructive operation and will wipe existing permission data.");
+        warn!("This is a destructive operation and will wipe existing permission data (excl. defaults for SendMessage).");
         warn!("Taking a backup is advised.");
         warn!("Continuing in 10 seconds...");
-        async_std::task::sleep(Duration::from_secs(1)).await;
+        async_std::task::sleep(Duration::from_secs(10)).await;
 
         let servers = db.col::<Document>("servers");
         let mut cursor = servers.find(doc! {}, None).await.unwrap();
@@ -488,7 +488,30 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
             info!("Updating server {id}");
 
             let mut update = doc! {};
-            update.insert("default_permissions", *DEFAULT_PERMISSION_SERVER as i64);
+
+            // Try to pluck channel permission SendMessage (0x2)
+            // Structure of default_permissions used to be [server, channel]
+            let has_send = document
+                .get_array("default_permissions")
+                .map(|x| {
+                    x.get(1)
+                        .map(|x| x.as_i32().map(|x| (x as u32 & 0x2) == 0x2))
+                })
+                .ok()
+                .flatten()
+                .flatten()
+                .unwrap_or_default();
+
+            update.insert(
+                "default_permissions",
+                (*DEFAULT_PERMISSION_SERVER
+                    // Remove Send Message permission if it wasn't originally granted
+                    ^ (if has_send {
+                        0
+                    } else {
+                        Permission::SendMessage as u64
+                    })) as i64,
+            );
 
             if let Some(Bson::Document(mut roles)) = document.remove("roles") {
                 for role in roles.keys().cloned().collect::<Vec<String>>() {
@@ -512,20 +535,51 @@ pub async fn run_migrations(db: &MongoDb, revision: i32) -> i32 {
                 .unwrap();
         }
 
-        db.col::<Document>("channels")
-            .update_many(
-                doc! {},
-                doc! {
-                    "$unset": {
-                        "permissions": 1_i32,
-                        "default_permissions": 1_i32,
-                        "role_permissions": 1_i32,
-                    }
-                },
-                None,
-            )
-            .await
-            .unwrap();
+        let channels = db.col::<Document>("channels");
+        let mut cursor = channels.find(doc! {}, None).await.unwrap();
+
+        while let Some(Ok(document)) = cursor.next().await {
+            let id = document.get_str("_id").unwrap().to_string();
+            info!("Updating channel {id}");
+
+            let mut unset = doc! {
+                "permissions": 1_i32,
+                "role_permissions": 1_i32,
+            };
+
+            // Try to pluck channel permission SendMessage (0x2)
+            let has_send = document
+                .get_i32("default_permissions")
+                .map(|x| (x as u32 & 0x2) == 0x2)
+                .unwrap_or(true);
+
+            if has_send {
+                // Let parent permissions fall through.
+                unset.insert("default_permissions", 1_i32);
+            }
+
+            let mut update = doc! {
+                "$unset": unset
+            };
+
+            if !has_send {
+                // Block send message permission.
+                update.insert(
+                    "$set",
+                    doc! {
+                        "default_permissions": {
+                            "a": 0_i64,
+                            "d": Permission::SendMessage as i64
+                        }
+                    },
+                );
+            }
+
+            channels
+                .update_one(doc! { "_id": id }, update, None)
+                .await
+                .unwrap();
+        }
     }
 
     if revision <= 14 {
