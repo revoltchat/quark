@@ -11,39 +11,56 @@ pub fn if_false(t: &bool) -> bool {
     !t
 }
 
+/// Representation of a server role
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, OptionalStruct, Default)]
 #[optional_derive(Serialize, Deserialize, JsonSchema, Debug, Clone, Default)]
 #[optional_name = "PartialRole"]
 #[opt_skip_serializing_none]
 #[opt_some_priority]
 pub struct Role {
+    /// Role name
     pub name: String,
+    /// Permissions available to this role
     pub permissions: OverrideField,
+    /// Colour used for this role
+    ///
+    /// This can be any valid CSS colour
     #[serde(skip_serializing_if = "Option::is_none")]
     pub colour: Option<String>,
+    /// Whether this role should be shown separately on the member sidebar
     #[serde(skip_serializing_if = "if_false", default)]
     pub hoist: bool,
+    /// Ranking of this role
     #[serde(default)]
     pub rank: i64,
 }
 
+/// Channel category
 #[derive(Validate, Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct Category {
+    /// Unique ID for this category
     #[validate(length(min = 1, max = 32))]
     pub id: String,
+    /// Title for this category
     #[validate(length(min = 1, max = 32))]
     pub title: String,
+    /// Channels in this category
     pub channels: Vec<String>,
 }
 
+/// System message channel assignments
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct SystemMessageChannels {
+    /// ID of channel to send user join messages in
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_joined: Option<String>,
+    /// ID of channel to send user left messages in
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_left: Option<String>,
+    /// ID of channel to send user kicked messages in
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_kicked: Option<String>,
+    /// ID of channel to send user banned messages in
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_banned: Option<String>,
 }
@@ -54,12 +71,6 @@ pub struct SystemMessageChannels {
 pub enum Flags {
     Verified = 1,
     Official = 2,
-}
-
-pub enum RemoveMember {
-    Leave,
-    Kick,
-    Ban,
 }
 
 /// Representation of a server on Revolt

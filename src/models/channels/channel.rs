@@ -135,6 +135,7 @@ pub enum Channel {
     },
 }
 
+/// Partial values of [Channel]
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Default, Clone)]
 pub struct PartialChannel {
     #[serde(skip_serializing_if = "Option::is_none")]
