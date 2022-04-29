@@ -45,7 +45,7 @@ impl AbstractAttachment for MongoDb {
                     "_id": attachment_id,
                     "tag": tag,
                     &key: {
-                        "$exists": true
+                        "$exists": false
                     }
                 },
             )
