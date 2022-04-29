@@ -17,12 +17,12 @@ impl File {
     }
 
     pub async fn use_icon(db: &Database, id: &str, parent: &str) -> Result<File> {
-        db.find_and_use_attachment(id, "avatars", "channel", parent)
+        db.find_and_use_attachment(id, "icons", "channel", parent)
             .await
     }
 
     pub async fn use_server_icon(db: &Database, id: &str, parent: &str) -> Result<File> {
-        db.find_and_use_attachment(id, "avatars", "server", parent)
+        db.find_and_use_attachment(id, "icons", "server", parent)
             .await
     }
 
