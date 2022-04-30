@@ -1,5 +1,7 @@
 use crate::events::client::EventV1;
-use crate::models::user::{Badges, FieldsUser, PartialUser, Presence, RelationshipStatus, User};
+use crate::models::user::{
+    Badges, FieldsUser, PartialUser, Presence, RelationshipStatus, User, UserHint,
+};
 use crate::permissions::defn::UserPerms;
 use crate::permissions::r#impl::user::get_relationship;
 use crate::{perms, Database, Error, Result};
@@ -338,6 +340,22 @@ impl User {
         )
         .await
     }
+
+    /// Find a user from a given token and hint
+    #[async_recursion]
+    pub async fn from_token(db: &Database, token: &str, hint: UserHint) -> Result<User> {
+        match hint {
+            UserHint::Bot => db.fetch_user(&db.fetch_bot_by_token(token).await?.id).await,
+            UserHint::User => db.fetch_user_by_token(token).await,
+            UserHint::Any => {
+                if let Ok(user) = User::from_token(db, token, UserHint::User).await {
+                    Ok(user)
+                } else {
+                    User::from_token(db, token, UserHint::Bot).await
+                }
+            }
+        }
+    }
 }
 
 use rauth::entities::Session;
@@ -363,12 +381,11 @@ impl<'r> FromRequest<'r> for User {
                     .map(|x| x.to_string());
 
                 if let Some(bot_token) = header_bot_token {
-                    if let Ok(bot) = db.fetch_bot_by_token(&bot_token).await {
-                        if let Ok(user) = db.fetch_user(&bot.id).await {
-                            return Some(user);
-                        }
+                    if let Ok(user) = User::from_token(db, &bot_token, UserHint::Bot).await {
+                        return Some(user);
                     }
                 } else if let Outcome::Success(session) = request.guard::<Session>().await {
+                    // This uses a guard so can't really easily be refactored into from_token at this stage.
                     if let Ok(user) = db.fetch_user(&session.user_id).await {
                         return Some(user);
                     }

@@ -142,3 +142,13 @@ pub enum FieldsUser {
     ProfileContent,
     ProfileBackground,
 }
+
+/// Enumeration providing a hint to the type of user we are handling
+pub enum UserHint {
+    /// Could be either a user or a bot
+    Any,
+    /// Only match bots
+    Bot,
+    /// Only match users
+    User,
+}
