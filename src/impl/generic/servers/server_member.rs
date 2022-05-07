@@ -48,7 +48,7 @@ impl Member {
 
             value
         } else {
-            0
+            i64::MAX
         }
     }
 
