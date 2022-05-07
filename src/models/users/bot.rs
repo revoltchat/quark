@@ -1,8 +1,17 @@
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
 /// Utility function to check if a boolean value is false
 pub fn if_false(t: &bool) -> bool {
     !t
+}
+
+/// Bot flag enum
+#[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
+#[repr(i32)]
+pub enum BotFlags {
+    Verified = 1,
+    Official = 2,
 }
 
 /// Representation of a bot on Revolt
@@ -24,6 +33,7 @@ pub struct Bot {
     /// Whether the bot is public
     /// (may be invited by anyone)
     pub public: bool,
+
     /// Whether to enable analytics
     #[serde(skip_serializing_if = "if_false", default)]
     pub analytics: bool,
@@ -33,6 +43,10 @@ pub struct Bot {
     /// Reserved; URL for handling interactions
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interactions_url: Option<String>,
+
+    /// Enum of bot flags
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub flags: Option<i32>,
 }
 
 /// Optional fields on bot object

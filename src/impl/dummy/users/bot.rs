@@ -13,7 +13,7 @@ impl AbstractBot for DummyDb {
             public: true,
             analytics: true,
             discoverable: true,
-            interactions_url: None,
+            ..Default::default()
         })
     }
 

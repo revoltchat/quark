@@ -68,7 +68,7 @@ pub struct SystemMessageChannels {
 /// Server flag enum
 #[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
 #[repr(i32)]
-pub enum Flags {
+pub enum ServerFlags {
     Verified = 1,
     Official = 2,
 }

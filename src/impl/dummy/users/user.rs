@@ -9,18 +9,7 @@ impl AbstractUser for DummyDb {
         Ok(User {
             id: id.into(),
             username: "username".into(),
-            avatar: None,
-            relations: None,
-
-            badges: None,
-            status: None,
-            profile: None,
-
-            flags: None,
-            bot: None,
-
-            relationship: None,
-            online: None,
+            ..Default::default()
         })
     }
 

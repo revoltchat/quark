@@ -60,24 +60,39 @@ pub struct UserProfile {
 #[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
 #[repr(i32)]
 pub enum Badges {
+    /// Revolt Developer
     Developer = 1,
+    /// Helped translate Revolt
     Translator = 2,
+    /// Monetarily supported Revolt
     Supporter = 4,
+    /// Responsibly disclosed a security issue
     ResponsibleDisclosure = 8,
+    /// Revolt Founder
     Founder = 16,
+    /// Platform moderator
     PlatformModeration = 32,
+    /// Active monetary supporter
     ActiveSupporter = 64,
+    /// 🦊🦝
     Paw = 128,
+    /// Joined as one of the first 1000 users in 2021
     EarlyAdopter = 256,
+    /// Amogus
     ReservedRelevantJokeBadge1 = 512,
+    /// Low resolution troll face
+    ReservedRelevantJokeBadge2 = 1024,
 }
 
 /// User flag enum
 #[derive(Debug, PartialEq, Eq, TryFromPrimitive, Copy, Clone)]
 #[repr(i32)]
 pub enum Flags {
+    /// User has been suspended from the platform
     Suspended = 1,
+    /// User has deleted their account
     Deleted = 2,
+    /// User was banned off the platform
     Banned = 4,
 }
 
@@ -120,6 +135,9 @@ pub struct User {
     /// Enum of user flags
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<i32>,
+    /// Whether this user is privileged
+    #[serde(default)]
+    pub privileged: bool,
     /// Bot information
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bot: Option<BotInformation>,

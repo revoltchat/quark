@@ -6,11 +6,17 @@ use crate::{
     DEFAULT_PERMISSION_SAVED_MESSAGES, DEFAULT_PERMISSION_VIEW_ONLY,
 };
 
+use super::super::Permission::GrantAllSafe;
+
 impl PermissionCalculator<'_> {
     /// Calculate the permissions from our perspective to the given server or channel
     ///
     /// Refer to https://developers.revolt.chat/stack/delta/permissions#flow-chart for more information
     pub async fn calc(&mut self, db: &crate::Database) -> Result<Perms> {
+        if self.perspective.privileged {
+            return Ok(Permissions([GrantAllSafe as u64]));
+        }
+
         let value = if self.channel.has() {
             calculate_channel_permission(self, db).await?
         } else if self.server.has() {
