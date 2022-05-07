@@ -4,6 +4,11 @@ use validator::Validate;
 
 use crate::models::attachment::File;
 
+/// Utility function to check if a boolean value is false
+pub fn if_false(t: &bool) -> bool {
+    !t
+}
+
 /// User's relationship with another user (or themselves)
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, PartialEq)]
 pub enum RelationshipStatus {
@@ -136,7 +141,7 @@ pub struct User {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<i32>,
     /// Whether this user is privileged
-    #[serde(default)]
+    #[serde(skip_serializing_if = "if_false", default)]
     pub privileged: bool,
     /// Bot information
     #[serde(skip_serializing_if = "Option::is_none")]
