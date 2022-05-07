@@ -18,6 +18,9 @@ pub trait AbstractMessage: Sync + Send {
     /// Delete a message from the database by its id
     async fn delete_message(&self, id: &str) -> Result<()>;
 
+    /// Delete messages from a channel by their ids and corresponding channel id
+    async fn delete_messages(&self, channel: &str, ids: Vec<String>) -> Result<()>;
+
     /// Fetch multiple messages
     async fn fetch_messages(
         &self,

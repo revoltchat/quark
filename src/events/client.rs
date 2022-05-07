@@ -77,6 +77,9 @@ pub enum EventV1 {
     /// Delete message
     MessageDelete { id: String, channel: String },
 
+    /// Bulk delete messages
+    BulkMessageDelete { channel: String, ids: Vec<String> },
+
     /// New channel
     ChannelCreate(Channel),
 

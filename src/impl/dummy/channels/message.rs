@@ -36,6 +36,11 @@ impl AbstractMessage for DummyDb {
         Ok(())
     }
 
+    async fn delete_messages(&self, channel: &str, ids: Vec<String>) -> Result<()> {
+        info!("Delete {ids:?} in {channel}");
+        Ok(())
+    }
+
     async fn fetch_messages(
         &self,
         channel: &str,

@@ -126,7 +126,20 @@ impl AbstractMessage for MongoDb {
     }
 
     async fn delete_message(&self, id: &str) -> Result<()> {
-        self.delete_one_by_id(COL, id).await.map(|_| ())
+        self.delete_bulk_messages(doc! {
+            "_id": id
+        })
+        .await
+    }
+
+    async fn delete_messages(&self, channel: &str, ids: Vec<String>) -> Result<()> {
+        self.delete_bulk_messages(doc! {
+            "channel": channel,
+            "_id": {
+                "$in": ids
+            }
+        })
+        .await
     }
 
     async fn fetch_messages(

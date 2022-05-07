@@ -143,6 +143,18 @@ impl Message {
         .await;
         Ok(())
     }
+
+    /// Bulk delete messages
+    pub async fn bulk_delete(db: &Database, channel: &str, ids: Vec<String>) -> Result<()> {
+        db.delete_messages(channel, ids.clone()).await?;
+        EventV1::BulkMessageDelete {
+            channel: channel.to_string(),
+            ids,
+        }
+        .p(channel.to_string())
+        .await;
+        Ok(())
+    }
 }
 
 pub trait IntoUsers {
