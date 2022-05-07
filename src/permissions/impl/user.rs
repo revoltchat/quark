@@ -87,7 +87,13 @@ async fn calculate_permission(data: &mut PermissionCalculator<'_>, db: &crate::D
             .await
             .unwrap_or(false)
     {
-        return UserPermission::Access + UserPermission::ViewProfile;
+        permissions = UserPermission::Access + UserPermission::ViewProfile;
+
+        if user.bot.is_some() || data.perspective.bot.is_some() {
+            permissions += UserPermission::SendMessage as u32;
+        }
+
+        return permissions;
     }
 
     permissions
