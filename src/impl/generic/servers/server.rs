@@ -223,7 +223,7 @@ impl Server {
             server: self.clone(),
             channels: channels.clone(),
         }
-        .p(user.id.clone())
+        .private(user.id.clone())
         .await;
 
         if let Some(id) = self

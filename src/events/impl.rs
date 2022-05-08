@@ -304,7 +304,8 @@ impl State {
 
     /// Handle an incoming event for protocol version 1
     pub async fn handle_incoming_event_v1(&mut self, db: &Database, event: &mut EventV1) -> bool {
-        if match event {
+        /* Superseded by private topics.
+          if match event {
             EventV1::UserRelationship { id, .. }
             | EventV1::UserSettingsUpdate { id, .. }
             | EventV1::ChannelAck { id, .. } => id != &self.cache.user_id,
@@ -319,7 +320,7 @@ impl State {
             _ => false,
         } {
             return false;
-        }
+        }*/
 
         // An event may trigger recalculation of an entire server's permission.
         // Keep track of whether we need to do anything.
@@ -533,5 +534,10 @@ impl EventV1 {
 
         #[cfg(debug_assertions)]
         redis_kiss::publish(channel, self).await.unwrap();
+    }
+
+    /// Publish private event
+    pub async fn private(self, id: String) {
+        self.p(format!("{}!", id)).await;
     }
 }

@@ -48,6 +48,7 @@ impl State {
     /// Create state from User
     pub fn from(user: User) -> State {
         let mut subscribed = HashSet::new();
+        subscribed.insert(format!("{}!", user.id));
         subscribed.insert(user.id.clone());
 
         let mut cache: Cache = Cache {

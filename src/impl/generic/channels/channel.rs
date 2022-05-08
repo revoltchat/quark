@@ -43,10 +43,10 @@ impl Channel {
 
         let event = EventV1::ChannelCreate(self.clone());
         match self {
-            Self::SavedMessages { user, .. } => event.p(user.clone()).await,
+            Self::SavedMessages { user, .. } => event.private(user.clone()).await,
             Self::DirectMessage { recipients, .. } | Self::Group { recipients, .. } => {
                 for recipient in recipients {
-                    event.clone().p(recipient.clone()).await;
+                    event.clone().private(recipient.clone()).await;
                 }
             }
             Self::TextChannel { server, .. } | Self::VoiceChannel { server, .. } => {
@@ -224,7 +224,7 @@ impl Channel {
             user: user.to_string(),
             message_id: message.to_string(),
         }
-        .p(user.to_string())
+        .private(user.to_string())
         .await;
 
         crate::tasks::ack::queue(
@@ -257,7 +257,7 @@ impl Channel {
                 .await;
 
                 EventV1::ChannelCreate(self.clone())
-                    .p(user.to_string())
+                    .private(user.to_string())
                     .await;
 
                 SystemMessage::UserAdded {

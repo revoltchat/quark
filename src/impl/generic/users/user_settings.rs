@@ -14,7 +14,7 @@ impl UserSettingsImpl for UserSettings {
             id: user.to_string(),
             update: self,
         }
-        .p(user.to_string())
+        .private(user.to_string())
         .await;
 
         Ok(())
