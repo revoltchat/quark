@@ -55,20 +55,20 @@ impl Invite {
     /// Resolve an invite by its ID or by a public server ID
     pub async fn find(db: &Database, code: &str) -> Result<Invite> {
         if let Ok(invite) = db.fetch_invite(code).await {
-            Ok(invite)
+            return Ok(invite);
         } else if let Ok(server) = db.fetch_server(code).await {
-            if let Some(channel) = server.channels.into_iter().next() {
-                Ok(Invite::Server {
-                    code: code.to_string(),
-                    server: server.id,
-                    creator: server.owner,
-                    channel,
-                })
-            } else {
-                Err(Error::NotFound)
+            if server.discoverable {
+                if let Some(channel) = server.channels.into_iter().next() {
+                    return Ok(Invite::Server {
+                        code: code.to_string(),
+                        server: server.id,
+                        creator: server.owner,
+                        channel,
+                    });
+                }
             }
-        } else {
-            Err(Error::NotFound)
         }
+
+        Err(Error::NotFound)
     }
 }
