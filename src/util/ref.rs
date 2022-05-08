@@ -51,7 +51,7 @@ impl Ref {
 
     /// Fetch invite from Ref
     pub async fn as_invite(&self, db: &Database) -> Result<Invite> {
-        db.fetch_invite(&self.id).await
+        Invite::find(db, &self.id).await
     }
 
     /// Fetch member from Ref

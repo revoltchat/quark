@@ -14,18 +14,21 @@ lazy_static! {
 }
 
 impl Invite {
+    /// Get the invite code for this invite
     pub fn code(&'_ self) -> &'_ str {
         match self {
             Invite::Server { code, .. } | Invite::Group { code, .. } => code,
         }
     }
 
+    /// Get the ID of the user who created this invite
     pub fn creator(&'_ self) -> &'_ str {
         match self {
             Invite::Server { creator, .. } | Invite::Group { creator, .. } => creator,
         }
     }
 
+    /// Create a new invite from given information
     pub async fn create(db: &Database, creator: &User, target: &Channel) -> Result<Invite> {
         let code = nanoid!(8, &*ALPHABET);
         let invite = match &target {
@@ -47,5 +50,25 @@ impl Invite {
 
         db.insert_invite(&invite).await?;
         Ok(invite)
+    }
+
+    /// Resolve an invite by its ID or by a public server ID
+    pub async fn find(db: &Database, code: &str) -> Result<Invite> {
+        if let Ok(invite) = db.fetch_invite(code).await {
+            Ok(invite)
+        } else if let Ok(server) = db.fetch_server(code).await {
+            if let Some(channel) = server.channels.into_iter().next() {
+                Ok(Invite::Server {
+                    code: code.to_string(),
+                    server: server.id,
+                    creator: server.owner,
+                    channel,
+                })
+            } else {
+                Err(Error::NotFound)
+            }
+        } else {
+            Err(Error::NotFound)
+        }
     }
 }
