@@ -40,6 +40,7 @@ pub struct Cache {
 pub struct State {
     pub cache: Cache,
 
+    pub private_topic: String,
     subscribed: HashSet<String>,
     state: SubscriptionStateChange,
 }
@@ -48,7 +49,8 @@ impl State {
     /// Create state from User
     pub fn from(user: User) -> State {
         let mut subscribed = HashSet::new();
-        subscribed.insert(format!("{}!", user.id));
+        let private_topic = format!("{}!", user.id);
+        subscribed.insert(private_topic.clone());
         subscribed.insert(user.id.clone());
 
         let mut cache: Cache = Cache {
@@ -61,6 +63,7 @@ impl State {
         State {
             cache,
             subscribed,
+            private_topic,
             state: SubscriptionStateChange::Reset,
         }
     }

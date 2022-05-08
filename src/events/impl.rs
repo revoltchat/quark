@@ -183,6 +183,7 @@ impl State {
 
         // Set subscription state internally.
         self.reset_state();
+        self.insert_subscription(self.private_topic.clone());
 
         for user in &users {
             self.insert_subscription(user.id.clone());
