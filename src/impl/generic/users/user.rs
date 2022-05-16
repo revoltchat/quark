@@ -36,7 +36,7 @@ impl User {
             data: partial,
             clear: remove,
         }
-        .p(self.id.clone())
+        .p_user(self.id.clone(), db)
         .await;
 
         Ok(())
