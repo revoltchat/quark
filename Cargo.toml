@@ -64,3 +64,6 @@ web-push = "0.7.2"
 # Implementations
 rauth = { optional = true, git = "https://github.com/insertish/rauth", rev = "611b11baa9e199bcefd0ca5bd3302f9d6904a2c6" }
 rocket = { optional = true, version = "0.5.0-rc.1", default-features = false, features = ["json"] }
+
+# Sentry
+sentry = "0.25.0"

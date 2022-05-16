@@ -49,7 +49,7 @@ use rocket::State;
 pub type Db = State<Database>;
 
 /// Configure logging and common Rust variables
-pub fn setup_logging() {
+pub fn setup_logging() -> sentry::ClientInitGuard {
     dotenv::dotenv().ok();
 
     if std::env::var("RUST_LOG").is_err() {
@@ -61,4 +61,12 @@ pub fn setup_logging() {
     }
 
     pretty_env_logger::init();
+
+    sentry::init((
+        "https://62fd0e02c5354905b4e286757f4beb16@sentry.insert.moe/4",
+        sentry::ClientOptions {
+            release: sentry::release_name!(),
+            ..Default::default()
+        },
+    ))
 }
