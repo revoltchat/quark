@@ -192,10 +192,11 @@ async fn calculate_channel_permission(
                     let mut roles = role_permissions
                         .iter()
                         .filter(|(id, _)| member_roles.contains(id))
-                        .map(|(id, permission)| {
-                            let role = server.roles.get(id).expect("Role on server object");
-                            let v: Override = (*permission).into();
-                            (role.rank, v)
+                        .filter_map(|(id, permission)| {
+                            server.roles.get(id).map(|role| {
+                                let v: Override = (*permission).into();
+                                (role.rank, v)
+                            })
                         })
                         .collect::<Vec<(i64, Override)>>();
 
