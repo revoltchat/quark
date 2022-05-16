@@ -33,7 +33,13 @@ lazy_static! {
 
 /// Queue a new task for a worker
 pub async fn queue(channel: String, id: String, is_dm: bool) {
-    Q.push(Data { channel, id, is_dm }).await;
+    Q.try_push(Data { channel, id, is_dm }).ok();
+
+    info!(
+        "Queue has {} slots remaining from {}.",
+        Q.available(),
+        Q.capacity()
+    );
 }
 
 /// Start a new worker

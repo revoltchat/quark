@@ -25,12 +25,18 @@ lazy_static! {
 
 /// Queue a new task for a worker
 pub async fn queue(channel: String, id: String, content: String) {
-    Q.push(EmbedTask {
+    Q.try_push(EmbedTask {
         channel,
         id,
         content,
     })
-    .await;
+    .ok();
+
+    info!(
+        "Queue has {} slots remaining from {}.",
+        Q.available(),
+        Q.capacity()
+    );
 }
 
 /// Start a new worker

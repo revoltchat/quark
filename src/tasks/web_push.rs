@@ -28,11 +28,17 @@ pub async fn queue(recipients: Vec<String>, payload: String) {
         return;
     }
 
-    Q.push(PushTask {
+    Q.try_push(PushTask {
         recipients,
         payload,
     })
-    .await;
+    .ok();
+
+    info!(
+        "Queue has {} slots remaining from {}.",
+        Q.available(),
+        Q.capacity()
+    );
 }
 
 /// Start a new worker
@@ -72,21 +78,58 @@ pub async fn worker(db: Database) {
                             },
                         };
 
-                        let mut builder = WebPushMessageBuilder::new(&subscription).unwrap();
-                        let sig_builder = VapidSignatureBuilder::from_pem(
-                            std::io::Cursor::new(&key),
-                            &subscription,
-                        )
-                        .unwrap();
+                        match WebPushMessageBuilder::new(&subscription) {
+                            Ok(mut builder) => {
+                                match VapidSignatureBuilder::from_pem(
+                                    std::io::Cursor::new(&key),
+                                    &subscription,
+                                ) {
+                                    Ok(sig_builder) => match sig_builder.build() {
+                                        Ok(signature) => {
+                                            builder.set_vapid_signature(signature);
+                                            builder.set_payload(
+                                                ContentEncoding::AesGcm,
+                                                task.payload.as_bytes(),
+                                            );
 
-                        let signature = sig_builder.build().unwrap();
-                        builder.set_vapid_signature(signature);
-                        builder.set_payload(ContentEncoding::AesGcm, task.payload.as_bytes());
-
-                        let msg = builder.build().unwrap();
-                        match client.send(msg).await {
-                            Ok(_) => info!("Sent Web Push notification to {:?}.", session.id),
-                            Err(err) => error!("Hit error sending Web Push! {:?}", err),
+                                            match builder.build() {
+                                                Ok(msg) => match client.send(msg).await {
+                                                    Ok(_) => {
+                                                        info!(
+                                                            "Sent Web Push notification to {:?}.",
+                                                            session.id
+                                                        )
+                                                    }
+                                                    Err(err) => {
+                                                        error!(
+                                                            "Hit error sending Web Push! {:?}",
+                                                            err
+                                                        )
+                                                    }
+                                                },
+                                                Err(err) => {
+                                                    error!(
+                                                        "Failed to build message for {}! {:?}",
+                                                        session.user_id, err
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        Err(err) => error!(
+                                            "Failed to build signature for {}! {:?}",
+                                            session.user_id, err
+                                        ),
+                                    },
+                                    Err(err) => error!(
+                                        "Failed to create signature builder for {}! {:?}",
+                                        session.user_id, err
+                                    ),
+                                }
+                            }
+                            Err(err) => error!(
+                                "Invalid subscription information for {}! {:?}",
+                                session.user_id, err
+                            ),
                         }
                     }
                 }
