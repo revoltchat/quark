@@ -155,6 +155,8 @@ impl User {
 
     /// Update a user's username
     pub async fn update_username(&mut self, db: &Database, username: String) -> Result<()> {
+        let username = username.trim().to_string();
+
         if db.is_username_taken(&username).await? {
             return Err(Error::UsernameTaken);
         }
