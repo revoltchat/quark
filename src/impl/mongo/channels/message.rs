@@ -55,17 +55,19 @@ impl MongoDb {
                     operation: "update_many",
                     with: "attachments",
                 })?;
-        }
 
-        // And then delete said messages.
-        self.col::<Document>(COL)
-            .delete_many(projection, None)
-            .await
-            .map(|_| ())
-            .map_err(|_| Error::DatabaseError {
-                operation: "delete_many",
-                with: "messages",
-            })
+            // And then delete said messages.
+            self.col::<Document>(COL)
+                .delete_many(projection, None)
+                .await
+                .map(|_| ())
+                .map_err(|_| Error::DatabaseError {
+                    operation: "delete_many",
+                    with: "messages",
+                })
+        } else {
+            Ok(())
+        }
     }
 }
 
