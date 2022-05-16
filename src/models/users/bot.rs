@@ -43,6 +43,12 @@ pub struct Bot {
     /// Reserved; URL for handling interactions
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interactions_url: Option<String>,
+    /// URL for terms of service
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub terms_of_service_url: Option<String>,
+    /// URL for privacy policy
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub privacy_policy_url: Option<String>,
 
     /// Enum of bot flags
     #[serde(skip_serializing_if = "Option::is_none")]
