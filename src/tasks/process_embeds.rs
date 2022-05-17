@@ -32,11 +32,7 @@ pub async fn queue(channel: String, id: String, content: String) {
     })
     .ok();
 
-    info!(
-        "Queue has {} slots remaining from {}.",
-        Q.available(),
-        Q.capacity()
-    );
+    info!("Queue is using {} slots from {}.", Q.len(), Q.capacity());
 }
 
 /// Start a new worker
