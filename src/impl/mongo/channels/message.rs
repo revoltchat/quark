@@ -21,7 +21,7 @@ impl MongoDb {
         );
 
         // Check if there are any attachments we need to delete.
-        let message_ids = self
+        let message_ids_with_attachments = self
             .find_with_options::<_, DocumentId>(
                 COL,
                 for_attachments,
@@ -35,12 +35,12 @@ impl MongoDb {
             .collect::<Vec<String>>();
 
         // If we found any, mark them as deleted.
-        if !message_ids.is_empty() {
+        if !message_ids_with_attachments.is_empty() {
             self.col::<Document>("attachments")
                 .update_many(
                     doc! {
                         "message_id": {
-                            "$in": message_ids
+                            "$in": message_ids_with_attachments
                         }
                     },
                     doc! {
@@ -55,19 +55,17 @@ impl MongoDb {
                     operation: "update_many",
                     with: "attachments",
                 })?;
-
-            // And then delete said messages.
-            self.col::<Document>(COL)
-                .delete_many(projection, None)
-                .await
-                .map(|_| ())
-                .map_err(|_| Error::DatabaseError {
-                    operation: "delete_many",
-                    with: "messages",
-                })
-        } else {
-            Ok(())
         }
+
+        // And then delete said messages.
+        self.col::<Document>(COL)
+            .delete_many(projection, None)
+            .await
+            .map(|_| ())
+            .map_err(|_| Error::DatabaseError {
+                operation: "delete_many",
+                with: "messages",
+            })
     }
 }
 
