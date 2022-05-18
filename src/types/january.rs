@@ -65,6 +65,10 @@ pub enum BandcampType {
 pub enum Special {
     /// No remote content
     None,
+    /// Content hint that this contains a GIF
+    /// 
+    /// Use metadata to find video or image to play
+    GIF,
     /// YouTube video
     YouTube {
         id: String,
