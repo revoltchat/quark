@@ -66,7 +66,7 @@ pub enum Special {
     /// No remote content
     None,
     /// Content hint that this contains a GIF
-    /// 
+    ///
     /// Use metadata to find video or image to play
     GIF,
     /// YouTube video
@@ -103,6 +103,9 @@ pub struct Metadata {
     /// Direct URL to web page
     #[serde(skip_serializing_if = "Option::is_none")]
     url: Option<String>,
+    /// Original direct URL
+    #[serde(skip_serializing_if = "Option::is_none")]
+    original_url: Option<String>,
     /// Remote content
     #[serde(skip_serializing_if = "Option::is_none")]
     special: Option<Special>,
@@ -162,6 +165,7 @@ pub struct Text {
 pub enum Embed {
     Website(Metadata),
     Image(Image),
+    Video(Video),
     Text(Text),
     None,
 }
