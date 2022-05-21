@@ -14,7 +14,7 @@ use crate::{
 /// # Reply
 ///
 /// Representation of a message reply before it is sent.
-#[derive(Serialize, Deserialize, JsonSchema)]
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Debug)]
 pub struct Reply {
     /// Message Id
     pub id: String,
@@ -69,11 +69,11 @@ pub struct Masquerade {
     /// Replace the display name shown on this message
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate(length(min = 1, max = 32))]
-    name: Option<String>,
+    pub name: Option<String>,
     /// Replace the avatar shown on this message (URL to image file)
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate(length(min = 1, max = 128))]
-    avatar: Option<String>,
+    pub avatar: Option<String>,
 }
 
 /// Representation of a Message on Revolt
